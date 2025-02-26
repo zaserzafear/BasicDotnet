@@ -7,7 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.6.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BasicDotnet.Domain\BasicDotnet.Domain.csproj" />
+    <ProjectReference Include="..\BasicDotnet.Infra\BasicDotnet.Infra.csproj" />
   </ItemGroup>
 
 </Project>

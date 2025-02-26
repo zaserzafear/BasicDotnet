@@ -1,3 +1,6 @@
+using BasicDotnet.App.Extensions;
+using BasicDotnet.Infra.Extensions;
+
 namespace BasicDotnet.WebApi
 {
     public class Program
@@ -12,6 +15,11 @@ namespace BasicDotnet.WebApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var configuration = builder.Configuration;
+
+            builder.Services.AddApplicationExtension(configuration);
+            builder.Services.AddInfrastructureExtension(configuration);
 
             var app = builder.Build();
 
