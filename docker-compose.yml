@@ -1,0 +1,26 @@
+services:
+  basicdotnet.mysql:
+    image: mysql:8.4.4-oraclelinux9
+    restart: unless-stopped
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      TZ: Asia/Bangkok
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: basic-dotnet
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - 58237:3306
+
+  basicdotnet.webapi:
+    image: ${DOCKER_REGISTRY-}basicdotnetwebapi
+    build:
+      context: .
+      dockerfile: BasicDotnet.WebApi/Dockerfile
+    environment:
+      TZ: Asia/Bangkok
+      ConnectionStrings__DefaultConnection: Server=basicdotnet.mysql;User=admin;Password=admin;Port=3306;Database=basic-dotnet;characterset=utf8mb4;
+
+volumes:
+  mysql-data: {}

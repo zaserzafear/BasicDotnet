@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicDotnet.WebApi", "BasicDotnet.WebApi\BasicDotnet.WebApi.csproj", "{83943F40-F1E5-427B-8B62-633D00EC55DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicDotnet.WebApi", "BasicDotnet.WebApi\BasicDotnet.WebApi.csproj", "{83943F40-F1E5-427B-8B62-633D00EC55DA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation Layer", "Presentation Layer", "{FA0BF646-B87F-4001-B84C-A0625EB8DB1F}"
 EndProject
@@ -13,11 +13,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain Layer", "Domain Laye
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure Layer", "Infrastructure Layer", "{C0C0C329-CFBA-4598-ACED-00067999F791}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicDotnet.App", "BasicDotnet.App\BasicDotnet.App.csproj", "{A07DFBDC-71D5-4634-AA97-893DCDB05887}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicDotnet.App", "BasicDotnet.App\BasicDotnet.App.csproj", "{A07DFBDC-71D5-4634-AA97-893DCDB05887}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicDotnet.Domain", "BasicDotnet.Domain\BasicDotnet.Domain.csproj", "{E98927A8-75CD-4FA0-BAB6-3E05CDFFA1D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicDotnet.Domain", "BasicDotnet.Domain\BasicDotnet.Domain.csproj", "{E98927A8-75CD-4FA0-BAB6-3E05CDFFA1D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicDotnet.Infra", "BasicDotnet.Infra\BasicDotnet.Infra.csproj", "{57E3383A-D3C6-4185-B86E-450FE8EC8E94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicDotnet.Infra", "BasicDotnet.Infra\BasicDotnet.Infra.csproj", "{57E3383A-D3C6-4185-B86E-450FE8EC8E94}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{044A6488-2430-4C1B-AD0B-74875B64DE22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{57E3383A-D3C6-4185-B86E-450FE8EC8E94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57E3383A-D3C6-4185-B86E-450FE8EC8E94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57E3383A-D3C6-4185-B86E-450FE8EC8E94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{044A6488-2430-4C1B-AD0B-74875B64DE22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{044A6488-2430-4C1B-AD0B-74875B64DE22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{044A6488-2430-4C1B-AD0B-74875B64DE22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{044A6488-2430-4C1B-AD0B-74875B64DE22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
