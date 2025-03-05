@@ -21,6 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicDotnet.Infra", "BasicD
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{044A6488-2430-4C1B-AD0B-74875B64DE22}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{49AE621E-0424-4A1D-AD83-08E913FD4EE3}"
+	ProjectSection(SolutionItems) = preProject
+		ef-migrate.sh = ef-migrate.sh
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +61,7 @@ Global
 		{A07DFBDC-71D5-4634-AA97-893DCDB05887} = {C1783C11-0C32-4D10-A4B8-2336639C9D33}
 		{E98927A8-75CD-4FA0-BAB6-3E05CDFFA1D2} = {5348C19D-99DE-48E4-95B3-C09D82EA6173}
 		{57E3383A-D3C6-4185-B86E-450FE8EC8E94} = {C0C0C329-CFBA-4598-ACED-00067999F791}
+		{044A6488-2430-4C1B-AD0B-74875B64DE22} = {49AE621E-0424-4A1D-AD83-08E913FD4EE3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CD442A06-4E38-4984-B80B-D31B773EFF84}
