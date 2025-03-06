@@ -1,5 +1,7 @@
+using BasicDotnet.App.Configurations;
 using BasicDotnet.App.Extensions;
 using BasicDotnet.Infra.Extensions;
+using BasicDotnet.WebApi.Extensions;
 
 namespace BasicDotnet.WebApi;
 
@@ -18,7 +20,16 @@ public class Program
 
         var configuration = builder.Configuration;
 
-        builder.Services.AddApplicationExtension(configuration);
+        var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
+        if (jwtSetting == null)
+        {
+            throw new ArgumentNullException(nameof(jwtSetting));
+        }
+
+        builder.Services.AddJwtAuthentication(jwtSetting);
+        builder.Services.AddAuthentication();
+
+        builder.Services.AddApplicationExtension(jwtSetting);
         builder.Services.AddInfrastructureExtension(configuration);
 
         var app = builder.Build();
@@ -33,6 +44,7 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseAuthorization();
         app.UseAuthorization();
 
 
