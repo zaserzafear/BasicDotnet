@@ -7,5 +7,5 @@ public interface IUserRepository
 {
     Task<UserBase?> AuthenticateAsync(string username, string password, UserRole role);
     Task<UserBase> AddUserAsync(UserBase user, UserRole role);
-    Task<bool> CheckUserExistsAsync(string email, UserRole role);
+    Task<bool> CheckUserExistsAsync(string username, string email, UserRole role);
 }

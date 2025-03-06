@@ -1,5 +1,6 @@
 ﻿using BasicDotnet.Domain.Entities;
 using BasicDotnet.Domain.Enums;
+using BasicDotnet.Domain.Exceptions;
 using BasicDotnet.Infra.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,7 @@ internal class UserRepository : IUserRepository
             _ => null
         };
 
-        if (user == null || !VerifyPassword(password, user.PasswordHash))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             return null;
 
         return user;
@@ -32,6 +33,13 @@ internal class UserRepository : IUserRepository
 
     public async Task<UserBase> AddUserAsync(UserBase user, UserRole role)
     {
+        // Check if user already exists
+        bool userExists = await CheckUserExistsAsync(user.Username, user.Email, role);
+        if (userExists)
+        {
+            throw new UserAlreadyExistsException($"A user with the username '{user.Username}' or email '{user.Email}' already exists.");
+        }
+
         // Hash the password
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
 
@@ -55,21 +63,16 @@ internal class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<bool> CheckUserExistsAsync(string email, UserRole role)
+    public async Task<bool> CheckUserExistsAsync(string username, string email, UserRole role)
     {
         bool isExists = role switch
         {
-            UserRole.SuperAdmin => await _context.SuperAdmins.AnyAsync(u => u.Email == email),
-            UserRole.Admin => await _context.Admins.AnyAsync(u => u.Email == email),
-            UserRole.Customer => await _context.Customers.AnyAsync(u => u.Email == email),
+            UserRole.SuperAdmin => await _context.SuperAdmins.AnyAsync(u => u.Email == email || u.Username == username),
+            UserRole.Admin => await _context.Admins.AnyAsync(u => u.Email == email || u.Username == username),
+            UserRole.Customer => await _context.Customers.AnyAsync(u => u.Email == email || u.Username == username),
             _ => throw new InvalidOperationException("Unsupported role type")
         };
 
         return isExists;
-    }
-
-    private bool VerifyPassword(string password, string passwordHash)
-    {
-        return BCrypt.Net.BCrypt.Verify(password, passwordHash);
     }
 }
