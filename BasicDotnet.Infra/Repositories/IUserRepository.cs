@@ -1,10 +1,11 @@
 ﻿using BasicDotnet.Domain.Entities;
+using BasicDotnet.Domain.Enums;
 
 namespace BasicDotnet.Infra.Repositories;
 
 public interface IUserRepository
 {
-    Task<User?> GetByUsernameAsync(string username);
-    Task AddUserAsync(User user);
-    Task<bool> CheckUserExistsAsync(string email);
+    Task<UserBase?> AuthenticateAsync(string username, string password, UserRole role);
+    Task<UserBase> AddUserAsync(UserBase user, UserRole role);
+    Task<bool> CheckUserExistsAsync(string email, UserRole role);
 }

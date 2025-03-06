@@ -13,15 +13,6 @@ public class AuthController : BaseController
         _authService = authService;
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto model)
-    {
-        if (await _authService.RegisterAsync(model.UserName, model.Email, model.Password))
-            return Ok(new { Message = "User registered successfully" });
-
-        return BadRequest("User already exists.");
-    }
-
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {

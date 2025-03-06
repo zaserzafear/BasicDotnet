@@ -2,7 +2,7 @@
 
 namespace BasicDotnet.WebApi.Controllers;
 
-[Route("api/auth")]
+[Route("api/[controller]")]
 [ApiController]
 public class BaseController : ControllerBase
 {
