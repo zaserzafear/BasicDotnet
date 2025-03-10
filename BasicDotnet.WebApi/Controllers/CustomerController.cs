@@ -1,7 +1,10 @@
 ﻿using BasicDotnet.App.Dtos;
 using BasicDotnet.App.Services;
+using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BasicDotnet.WebApi.Controllers;
 
@@ -15,11 +18,10 @@ public class CustomerController : BaseController
         _authService = authService;
     }
 
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        string requestId = HttpContext.TraceIdentifier;
-
         try
         {
             var user = await _authService.AddUserAsync(dto.UserName, dto.Email, dto.Password, _userRole);
@@ -35,6 +37,7 @@ public class CustomerController : BaseController
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -50,5 +53,30 @@ public class CustomerController : BaseController
         {
             return Error($"An unexpected error occurred. {ex.Message}", 500);
         }
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUserAsync()
+    {
+        // Retrieve the GUID user ID from the Name claim
+        var userIdClaim = HttpContext.User.Identity?.Name;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            return BadRequest("Invalid or missing user ID.");
+        }
+
+        // Retrieve the role claim and map it to the UserRole enum
+        var roleClaim = HttpContext.User.Claims
+                        .FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+        if (!Enum.TryParse(roleClaim, out UserRole role))
+        {
+            return BadRequest("Invalid or missing role.");
+        }
+
+        var user = await _authService.GetUserByIdAsync(userId, role);
+
+        return Success(user);
     }
 }

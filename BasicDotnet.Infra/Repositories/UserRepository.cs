@@ -75,4 +75,15 @@ internal class UserRepository : IUserRepository
 
         return isExists;
     }
+
+    public async Task<UserBase?> GetUserByIdAsync(Guid userId, UserRole role)
+    {
+        return role switch
+        {
+            UserRole.SuperAdmin => await _context.SuperAdmins.FirstOrDefaultAsync(u => u.Id == userId),
+            UserRole.Admin => await _context.Admins.FirstOrDefaultAsync(u => u.Id == userId),
+            UserRole.Customer => await _context.Customers.FirstOrDefaultAsync(u => u.Id == userId),
+            _ => throw new InvalidOperationException("Unsupported role type")
+        };
+    }
 }

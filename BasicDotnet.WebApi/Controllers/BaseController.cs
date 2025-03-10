@@ -1,10 +1,12 @@
 ﻿using BasicDotnet.WebApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicDotnet.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class BaseController : ControllerBase
 {
     protected string RequestId => HttpContext.TraceIdentifier;

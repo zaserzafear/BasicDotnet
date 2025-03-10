@@ -25,18 +25,16 @@ public static class JwtExtensions
         })
         .AddJwtBearer(options =>
         {
-            // Check if the environment is not development
-            options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSetting.SecretKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.SecretKey)), // Consistent encoding
                 ValidateIssuer = true,
                 ValidIssuer = jwtSetting.Issuer,
                 ValidateAudience = true,
                 ValidAudience = jwtSetting.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero // No clock skew for strict expiration time
             };
         });
 
