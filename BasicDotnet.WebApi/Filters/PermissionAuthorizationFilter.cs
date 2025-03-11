@@ -1,11 +1,10 @@
-﻿using BasicDotnet.App.Attributes;
-using BasicDotnet.Infra.Repositories;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using BasicDotnet.Infra.Repositories;
+using BasicDotnet.WebApi.Attributes;
+using BasicDotnet.WebApi.Helpers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
 
-namespace BasicDotnet.App.Filters;
+namespace BasicDotnet.WebApi.Filters;
 
 public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
 {
@@ -28,29 +27,31 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
             .OfType<HasPermissionAttribute>()
             .ToList();
 
-        var ownCustomerPermissionAttributes = endpoint?
+        var ownUserIdPermissionAttributes = endpoint?
             .Metadata
-            .OfType<HasOwnCustomerPermissionAttribute>()
+            .OfType<HasOwnUserIdPermissionAttribute>()
             .ToList();
 
         // If there are no permission attributes, continue with no permission check
-        if (permissionAttributes == null && ownCustomerPermissionAttributes == null)
+        if (permissionAttributes!.Count == 0 && ownUserIdPermissionAttributes!.Count == 0)
         {
             return;
         }
+
+        string RequestId = _httpContextAccessor!.HttpContext!.TraceIdentifier;
 
         // Fetch role claim from user
         var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
         if (string.IsNullOrEmpty(roleClaim))
         {
-            context.Result = new ForbidResult();
+            context.Result = ResponseHelper.Error(RequestId, "Forbidden: No role claim found", 403);
             return;
         }
 
         var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value;
         if (string.IsNullOrEmpty(currentUserId))
         {
-            context.Result = new ForbidResult();
+            context.Result = ResponseHelper.Error(RequestId, "Forbidden: No unique_name claim found", 403);
             return;
         }
 
@@ -58,7 +59,7 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
         bool hasPermission = false;
 
         // Check generic permissions first
-        foreach (var permissionAttribute in permissionAttributes)
+        foreach (var permissionAttribute in permissionAttributes!)
         {
             hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.PermissionName);
 
@@ -70,19 +71,18 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
 
         if (!hasPermission)
         {
-            context.Result = new ForbidResult(); // No matching permission found
+            context.Result = ResponseHelper.Error(RequestId, "Forbidden: User does not have permission", 403);
             return;
         }
 
-        // Check for 'ViewOwnCustomer' permission
-        foreach (var ownCustomerPermissionAttribute in ownCustomerPermissionAttributes)
+        foreach (var ownCustomerPermissionAttribute in ownUserIdPermissionAttributes!)
         {
             // Assuming the user_id is passed as part of the route
             var userIdFromRoute = context.RouteData.Values["user_id"]?.ToString();
 
             if (userIdFromRoute != currentUserId)
             {
-                context.Result = new ForbidResult(); // Deny access if the user is trying to access someone else's data
+                context.Result = ResponseHelper.Error(RequestId, "Access denied: You are not authorized.", 403);
                 return;
             }
         }

@@ -1,5 +1,5 @@
 ﻿using BasicDotnet.Domain.Enums;
-using BasicDotnet.WebApi.Models;
+using BasicDotnet.WebApi.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,14 +13,14 @@ public class BaseController : ControllerBase
 {
     protected string RequestId => HttpContext.TraceIdentifier;
 
-    protected IActionResult Success<T>(T data, string message = "Request successful")
+    protected IActionResult Success<T>(T data, string message = "Request successful", int statusCode = 200)
     {
-        return Ok(ApiResult<T>.SuccessResult(data, RequestId, message));
+        return ResponseHelper.Success(RequestId, data, message, statusCode);
     }
 
     protected IActionResult Error(string message, int statusCode = 400)
     {
-        return StatusCode(statusCode, ApiResult<object>.ErrorResult(message, RequestId));
+        return ResponseHelper.Error(RequestId, message, statusCode);
     }
 
     protected Guid? GetCurrentUserId()

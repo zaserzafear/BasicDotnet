@@ -1,8 +1,8 @@
 using BasicDotnet.App.Configurations;
 using BasicDotnet.App.Extensions;
-using BasicDotnet.App.Filters;
 using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.Extensions;
+using BasicDotnet.WebApi.Filters;
 using Microsoft.OpenApi.Models;
 
 namespace BasicDotnet.WebApi;

@@ -1,9 +1,9 @@
-﻿using BasicDotnet.App.Attributes;
-using BasicDotnet.App.Dtos;
+﻿using BasicDotnet.App.Dtos;
 using BasicDotnet.App.Services;
 using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
 using BasicDotnet.Domain.Security;
+using BasicDotnet.WebApi.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,14 +62,13 @@ public class CustomerController : BaseController
     {
         // Get the current user and role from claims
         var currentUserId = GetCurrentUserId();
-        var currentRole = GetCurrentRoleId();
 
-        if (currentUserId == null || currentRole == null)
+        if (currentUserId == null)
         {
             return Error("Invalid or missing user ID or role.", 400);
         }
 
-        var user = await _authService.GetUserByIdAsync(currentUserId.Value, currentRole.Value);
+        var user = await _authService.GetUserByIdAsync(currentUserId.Value, _userRole);
 
         return Success(user);
     }
@@ -77,7 +76,7 @@ public class CustomerController : BaseController
     [HttpGet("{user_id}")]
     [HasPermission(PermissionNames.ViewAllCustomers)]
     [HasPermission(PermissionNames.ViewOwnCustomer)]
-    [HasOwnCustomerPermission(PermissionNames.ViewOwnCustomer)]
+    [HasOwnUserIdPermission(PermissionNames.ViewOwnCustomer)]
     public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
     {
         var user = await _authService.GetUserByIdAsync(user_id, _userRole);

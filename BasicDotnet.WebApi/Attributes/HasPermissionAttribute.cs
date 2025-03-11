@@ -1,4 +1,4 @@
-﻿namespace BasicDotnet.App.Attributes;
+﻿namespace BasicDotnet.WebApi.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class HasPermissionAttribute : Attribute
