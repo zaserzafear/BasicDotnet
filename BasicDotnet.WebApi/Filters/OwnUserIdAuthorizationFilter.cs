@@ -22,11 +22,6 @@ public class OwnUserIdAuthorizationFilter : IAsyncAuthorizationFilter
             .OfType<HasOwnUserIdPermissionAttribute>()
             .ToList();
 
-        if (ownUserIdPermissionAttributes is null || ownUserIdPermissionAttributes.Count == 0)
-        {
-            return Task.CompletedTask;
-        }
-
         string requestId = _httpContextAccessor.HttpContext?.TraceIdentifier ?? string.Empty;
 
         var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value;
