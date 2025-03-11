@@ -1,5 +1,5 @@
 ﻿using BasicDotnet.Domain.Entities;
-using BasicDotnet.Domain.StaticValues;
+using BasicDotnet.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace BasicDotnet.Infra.Persistence;
@@ -18,14 +18,14 @@ internal class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Role>().HasData(
-            new Role { Id = 1, Name = RoleNames.SuperAdmin },
-            new Role { Id = 2, Name = RoleNames.Admin },
-            new Role { Id = 3, Name = RoleNames.Customer }
+            new Role { Id = (int)UserRoleEnum.SuperAdmin, Name = UserRoleEnum.SuperAdmin.GetName() },
+            new Role { Id = (int)UserRoleEnum.Admin, Name = UserRoleEnum.Admin.GetName() },
+            new Role { Id = (int)UserRoleEnum.Customer, Name = UserRoleEnum.Customer.GetName() }
         );
 
         builder.Entity<Permission>().HasData(
-            new Permission { Id = 1, Name = PermissionNames.ViewAllCustomers, Description = "Permission to view all customers" },
-            new Permission { Id = 2, Name = PermissionNames.ViewOwnCustomer, Description = "Permission to view only own customer details" }
+            new Permission { Id = (int)PermissionEnum.ViewAllCustomers, Name = PermissionEnum.ViewAllCustomers.GetName(), Description = "Permission to view all customers" },
+            new Permission { Id = (int)PermissionEnum.ViewOwnCustomer, Name = PermissionEnum.ViewOwnCustomer.GetName(), Description = "Permission to view only own customer details" }
         );
 
         builder.Entity<RolePermission>()
@@ -43,15 +43,15 @@ internal class AppDbContext : DbContext
 
         builder.Entity<RolePermission>().HasData(
             // SuperAdmin has permission to view all customers and their own customer
-            new RolePermission { RoleId = 1, PermissionId = 1 },  // SuperAdmin can view all customers
-            new RolePermission { RoleId = 1, PermissionId = 2 },  // SuperAdmin can view their own customer
+            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // SuperAdmin can view all customers
+            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewOwnCustomer },  // SuperAdmin can view their own customer
 
             // Admin can view all customers and their own customer
-            new RolePermission { RoleId = 2, PermissionId = 1 },  // Admin can view all customers
-            new RolePermission { RoleId = 2, PermissionId = 2 },  // Admin can view their own customer
+            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // Admin can view all customers
+            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewOwnCustomer },  // Admin can view their own customer
 
             // Customer can only view their own customer
-            new RolePermission { RoleId = 3, PermissionId = 2 }   // Customer can view their own customer
+            new RolePermission { RoleId = (int)UserRoleEnum.Customer, PermissionId = (int)PermissionEnum.ViewOwnCustomer }   // Customer can view their own customer
         );
     }
 }

@@ -35,11 +35,11 @@ public class BaseController : ControllerBase
         return null;
     }
 
-    protected UserRole? GetCurrentRoleId()
+    protected UserRoleEnum? GetCurrentRoleId()
     {
         var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
 
-        if (Enum.TryParse(roleClaim, out UserRole role))
+        if (Enum.TryParse(roleClaim, out UserRoleEnum role))
         {
             return role;
         }

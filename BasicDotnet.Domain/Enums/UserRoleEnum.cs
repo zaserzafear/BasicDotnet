@@ -1,6 +1,6 @@
 ﻿namespace BasicDotnet.Domain.Enums;
 
-public enum UserRole
+public enum UserRoleEnum
 {
     SuperAdmin = 1,
     Admin = 2,

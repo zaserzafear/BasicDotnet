@@ -1,4 +1,5 @@
-﻿using BasicDotnet.Infra.Repositories;
+﻿using BasicDotnet.Domain.Enums;
+using BasicDotnet.Infra.Repositories;
 using BasicDotnet.WebApi.Attributes;
 using BasicDotnet.WebApi.Helpers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -44,7 +45,7 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
         bool hasPermission = false;
         foreach (var permissionAttribute in permissionAttributes)
         {
-            hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.PermissionName);
+            hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.Permission.GetName());
 
             if (hasPermission)
             {

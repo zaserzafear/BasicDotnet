@@ -22,13 +22,13 @@ public class AuthService
         _roleRepository = roleRepository;
     }
 
-    public async Task<UserBase> AddUserAsync(string userName, string email, string password, UserRole userRole)
+    public async Task<UserBase> AddUserAsync(string userName, string email, string password, UserRoleEnum userRole)
     {
         UserBase user = userRole switch
         {
-            UserRole.SuperAdmin => new SuperAdmin { Username = userName, PasswordHash = password, Email = email },
-            UserRole.Admin => new Admin { Username = userName, PasswordHash = password, Email = email },
-            UserRole.Customer => new Customer { Username = userName, PasswordHash = password, Email = email },
+            UserRoleEnum.SuperAdmin => new SuperAdmin { Username = userName, PasswordHash = password, Email = email },
+            UserRoleEnum.Admin => new Admin { Username = userName, PasswordHash = password, Email = email },
+            UserRoleEnum.Customer => new Customer { Username = userName, PasswordHash = password, Email = email },
             _ => throw new InvalidOperationException("Unsupported role type")
         };
 
@@ -37,7 +37,7 @@ public class AuthService
         return addedUser;
     }
 
-    public async Task<string?> AuthenticateAsync(string username, string password, UserRole userRole)
+    public async Task<string?> AuthenticateAsync(string username, string password, UserRoleEnum userRole)
     {
         var user = await _userRepository.AuthenticateAsync(username, password, userRole);
         if (user == null)
@@ -46,7 +46,7 @@ public class AuthService
         return GenerateToken(user);
     }
 
-    public async Task<UserBase?> GetUserByIdAsync(Guid userId, UserRole userRole)
+    public async Task<UserBase?> GetUserByIdAsync(Guid userId, UserRoleEnum userRole)
     {
         return await _userRepository.GetUserByIdAsync(userId, userRole);
     }

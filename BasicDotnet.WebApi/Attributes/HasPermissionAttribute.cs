@@ -1,12 +1,14 @@
-﻿namespace BasicDotnet.WebApi.Attributes;
+﻿using BasicDotnet.Domain.Enums;
+
+namespace BasicDotnet.WebApi.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class HasPermissionAttribute : Attribute
 {
-    public string PermissionName { get; }
+    public PermissionEnum Permission { get; }
 
-    public HasPermissionAttribute(string permissionName)
+    public HasPermissionAttribute(PermissionEnum permission)
     {
-        PermissionName = permissionName;
+        Permission = permission;
     }
 }

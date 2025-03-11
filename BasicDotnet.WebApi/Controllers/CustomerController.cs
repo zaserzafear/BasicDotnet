@@ -2,7 +2,6 @@
 using BasicDotnet.App.Services;
 using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
-using BasicDotnet.Domain.StaticValues;
 using BasicDotnet.WebApi.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +10,7 @@ namespace BasicDotnet.WebApi.Controllers;
 
 public class CustomerController : BaseController
 {
-    private readonly UserRole _userRole = UserRole.Customer;
+    private readonly UserRoleEnum _userRole = UserRoleEnum.Customer;
 
     public readonly AuthService _authService;
 
@@ -74,8 +73,8 @@ public class CustomerController : BaseController
     }
 
     [HttpGet("{user_id}")]
-    [HasPermission(PermissionNames.ViewAllCustomers)]
-    [HasPermission(PermissionNames.ViewOwnCustomer)]
+    [HasPermission(PermissionEnum.ViewAllCustomers)]
+    [HasPermission(PermissionEnum.ViewOwnCustomer)]
     [HasOwnUserIdPermission]
     public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
     {
