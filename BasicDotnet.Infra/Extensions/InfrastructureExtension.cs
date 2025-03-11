@@ -14,6 +14,8 @@ public static class InfrastructureExtension
         services.AddDbContext<AppDbContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         return services;
     }

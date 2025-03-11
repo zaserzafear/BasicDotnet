@@ -1,5 +1,6 @@
 using BasicDotnet.App.Configurations;
 using BasicDotnet.App.Extensions;
+using BasicDotnet.App.Filters;
 using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.Extensions;
 using Microsoft.OpenApi.Models;
@@ -13,8 +14,12 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
+        builder.Services.AddHttpContextAccessor();
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers(options =>
+        {
+            options.Filters.Add<PermissionAuthorizationFilter>();
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

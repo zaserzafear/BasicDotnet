@@ -1,17 +1,19 @@
-﻿using BasicDotnet.App.Dtos;
+﻿using BasicDotnet.App.Attributes;
+using BasicDotnet.App.Dtos;
 using BasicDotnet.App.Services;
 using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
+using BasicDotnet.Domain.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BasicDotnet.WebApi.Controllers;
 
 public class CustomerController : BaseController
 {
-    private readonly AuthService _authService;
-    private readonly Domain.Enums.UserRole _userRole = Domain.Enums.UserRole.Customer;
+    private readonly UserRole _userRole = UserRole.Customer;
+
+    public readonly AuthService _authService;
 
     public CustomerController(AuthService authService)
     {
@@ -58,25 +60,34 @@ public class CustomerController : BaseController
     [HttpGet("me")]
     public async Task<IActionResult> GetCurrentUserAsync()
     {
-        // Retrieve the GUID user ID from the Name claim
-        var userIdClaim = HttpContext.User.Identity?.Name;
+        // Get the current user and role from claims
+        var currentUserId = GetCurrentUserId();
+        var currentRole = GetCurrentRoleId();
 
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+        if (currentUserId == null || currentRole == null)
         {
-            return BadRequest("Invalid or missing user ID.");
+            return Error("Invalid or missing user ID or role.", 400);
         }
 
-        // Retrieve the role claim and map it to the UserRole enum
-        var roleClaim = HttpContext.User.Claims
-                        .FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        var user = await _authService.GetUserByIdAsync(currentUserId.Value, currentRole.Value);
 
-        if (!Enum.TryParse(roleClaim, out UserRole role))
+        return Success(user);
+    }
+
+    [HttpGet("{user_id}")]
+    [HasPermission(PermissionNames.ViewAllCustomers)]
+    [HasPermission(PermissionNames.ViewOwnCustomer)]
+    public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
+    {
+        var currentUserId = GetCurrentUserId();
+        var currentRole = GetCurrentRoleId();
+
+        if (currentRole == UserRole.Customer && currentUserId != user_id)
         {
-            return BadRequest("Invalid or missing role.");
+            return Error("Access denied: You are not authorized to view details of other users with this role.", 403);
         }
 
-        var user = await _authService.GetUserByIdAsync(userId, role);
-
+        var user = await _authService.GetUserByIdAsync(user_id, _userRole);
         return Success(user);
     }
 }
