@@ -2,7 +2,7 @@
 using BasicDotnet.App.Services;
 using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
-using BasicDotnet.Domain.Security;
+using BasicDotnet.Domain.StaticValues;
 using BasicDotnet.WebApi.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

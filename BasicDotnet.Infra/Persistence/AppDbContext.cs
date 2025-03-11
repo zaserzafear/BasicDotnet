@@ -1,5 +1,5 @@
 ﻿using BasicDotnet.Domain.Entities;
-using BasicDotnet.Domain.Security;
+using BasicDotnet.Domain.StaticValues;
 using Microsoft.EntityFrameworkCore;
 
 namespace BasicDotnet.Infra.Persistence;

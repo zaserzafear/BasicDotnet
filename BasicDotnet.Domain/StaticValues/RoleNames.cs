@@ -1,4 +1,4 @@
-﻿namespace BasicDotnet.Domain.Security;
+﻿namespace BasicDotnet.Domain.StaticValues;
 
 public static class RoleNames
 {
