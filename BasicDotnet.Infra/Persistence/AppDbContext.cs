@@ -25,7 +25,7 @@ internal class AppDbContext : DbContext
 
         builder.Entity<Permission>().HasData(
             new Permission { Id = (int)PermissionEnum.ViewAllCustomers, Name = PermissionEnum.ViewAllCustomers.GetName(), Description = "Permission to view all customers" },
-            new Permission { Id = (int)PermissionEnum.ViewOwnCustomer, Name = PermissionEnum.ViewOwnCustomer.GetName(), Description = "Permission to view only own customer details" }
+            new Permission { Id = (int)PermissionEnum.ViewOwnUserId, Name = PermissionEnum.ViewOwnUserId.GetName(), Description = "Permission to view only own customer details" }
         );
 
         builder.Entity<RolePermission>()
@@ -44,14 +44,12 @@ internal class AppDbContext : DbContext
         builder.Entity<RolePermission>().HasData(
             // SuperAdmin has permission to view all customers and their own customer
             new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // SuperAdmin can view all customers
-            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewOwnCustomer },  // SuperAdmin can view their own customer
 
             // Admin can view all customers and their own customer
             new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // Admin can view all customers
-            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewOwnCustomer },  // Admin can view their own customer
 
             // Customer can only view their own customer
-            new RolePermission { RoleId = (int)UserRoleEnum.Customer, PermissionId = (int)PermissionEnum.ViewOwnCustomer }   // Customer can view their own customer
+            new RolePermission { RoleId = (int)UserRoleEnum.Customer, PermissionId = (int)PermissionEnum.ViewOwnUserId }   // Customer can view their own user_id customer
         );
     }
 }

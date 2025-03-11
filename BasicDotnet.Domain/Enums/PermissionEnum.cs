@@ -3,5 +3,5 @@
 public enum PermissionEnum
 {
     ViewAllCustomers = 1,
-    ViewOwnCustomer = 2
+    ViewOwnUserId = 2
 }

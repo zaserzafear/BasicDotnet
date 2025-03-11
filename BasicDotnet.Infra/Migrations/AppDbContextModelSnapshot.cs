@@ -105,7 +105,7 @@ namespace BasicDotnet.Infra.Migrations
                         {
                             Id = 2,
                             Description = "Permission to view only own customer details",
-                            Name = "ViewOwnCustomer"
+                            Name = "ViewOwnUserId"
                         });
                 });
 
@@ -165,18 +165,8 @@ namespace BasicDotnet.Infra.Migrations
                         },
                         new
                         {
-                            RoleId = 1,
-                            PermissionId = 2
-                        },
-                        new
-                        {
                             RoleId = 2,
                             PermissionId = 1
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            PermissionId = 2
                         },
                         new
                         {

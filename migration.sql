@@ -1,26 +1,42 @@
-Build started...
-Build succeeded.
-CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
-    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
-    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
-    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
-) CHARACTER SET=utf8mb4;
+﻿START TRANSACTION;
+
+DROP TABLE `RolePermissions`;
+
+DROP TABLE `Permissions`;
+
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '20250311015455_SeedRolePermissions';
+
+COMMIT;
 
 START TRANSACTION;
 
-ALTER DATABASE CHARACTER SET utf8mb4;
+DROP TABLE `Admins`;
 
-CREATE TABLE `Roles` (
-    `Id` int NOT NULL AUTO_INCREMENT,
-    `Name` longtext CHARACTER SET utf8mb4 NOT NULL,
-    CONSTRAINT `PK_Roles` PRIMARY KEY (`Id`)
-) CHARACTER SET=utf8mb4;
+DROP TABLE `Customers`;
+
+DROP TABLE `SuperAdmins`;
+
+DELETE FROM `Roles`
+WHERE `Id` = 1;
+SELECT ROW_COUNT();
+
+
+DELETE FROM `Roles`
+WHERE `Id` = 2;
+SELECT ROW_COUNT();
+
+
+DELETE FROM `Roles`
+WHERE `Id` = 3;
+SELECT ROW_COUNT();
+
 
 CREATE TABLE `Users` (
     `Id` char(36) COLLATE ascii_general_ci NOT NULL,
-    `UserName` longtext CHARACTER SET utf8mb4 NOT NULL,
     `Email` longtext CHARACTER SET utf8mb4 NOT NULL,
     `PasswordHash` longtext CHARACTER SET utf8mb4 NOT NULL,
+    `UserName` longtext CHARACTER SET utf8mb4 NOT NULL,
     CONSTRAINT `PK_Users` PRIMARY KEY (`Id`)
 ) CHARACTER SET=utf8mb4;
 
@@ -34,19 +50,8 @@ CREATE TABLE `UserRoles` (
 
 CREATE INDEX `IX_UserRoles_RoleId` ON `UserRoles` (`RoleId`);
 
-INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('20250304082655_InitialCreate', '8.0.13');
+DELETE FROM `__EFMigrationsHistory`
+WHERE `MigrationId` = '20250306023844_SeparateTableUserByRole';
 
 COMMIT;
 
-START TRANSACTION;
-
-INSERT INTO `Roles` (`Id`, `Name`)
-VALUES (1, 'Super Admin'),
-(2, 'Admin'),
-(3, 'User');
-
-INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
-VALUES ('20250304084023_SeedRoles', '8.0.13');
-
-COMMIT;

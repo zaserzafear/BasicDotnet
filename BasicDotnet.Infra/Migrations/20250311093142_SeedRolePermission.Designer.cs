@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BasicDotnet.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250306023844_SeparateTableUserByRole")]
-    partial class SeparateTableUserByRole
+    [Migration("20250311093142_SeedRolePermission")]
+    partial class SeedRolePermission
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,6 +77,41 @@ namespace BasicDotnet.Infra.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("BasicDotnet.Domain.Entities.Permission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Permissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Permission to view all customers",
+                            Name = "ViewAllCustomers"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Permission to view only own customer details",
+                            Name = "ViewOwnUserId"
+                        });
+                });
+
             modelBuilder.Entity("BasicDotnet.Domain.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -111,6 +146,38 @@ namespace BasicDotnet.Infra.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BasicDotnet.Domain.Entities.RolePermission", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 2
+                        });
+                });
+
             modelBuilder.Entity("BasicDotnet.Domain.Entities.SuperAdmin", b =>
                 {
                     b.Property<Guid>("Id")
@@ -135,6 +202,35 @@ namespace BasicDotnet.Infra.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SuperAdmins");
+                });
+
+            modelBuilder.Entity("BasicDotnet.Domain.Entities.RolePermission", b =>
+                {
+                    b.HasOne("BasicDotnet.Domain.Entities.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BasicDotnet.Domain.Entities.Role", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("BasicDotnet.Domain.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
+                });
+
+            modelBuilder.Entity("BasicDotnet.Domain.Entities.Role", b =>
+                {
+                    b.Navigation("RolePermissions");
                 });
 #pragma warning restore 612, 618
         }

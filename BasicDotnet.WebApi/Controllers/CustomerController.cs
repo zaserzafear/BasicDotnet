@@ -74,8 +74,7 @@ public class CustomerController : BaseController
 
     [HttpGet("{user_id}")]
     [HasPermission(PermissionEnum.ViewAllCustomers)]
-    [HasPermission(PermissionEnum.ViewOwnCustomer)]
-    [HasOwnUserIdPermission]
+    [HasPermission(PermissionEnum.ViewOwnUserId)]
     public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
     {
         var user = await _authService.GetUserByIdAsync(user_id, _userRole);

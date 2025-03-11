@@ -34,7 +34,6 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
         }
 
         string requestId = _httpContextAccessor.HttpContext?.TraceIdentifier ?? string.Empty;
-
         var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
         if (string.IsNullOrEmpty(roleClaim))
         {
@@ -45,10 +44,16 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
         bool hasPermission = false;
         foreach (var permissionAttribute in permissionAttributes)
         {
-            hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.Permission.GetName());
+            var permissionName = permissionAttribute.Permission.GetName();
+            hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionName);
 
             if (hasPermission)
             {
+                if (permissionAttribute.Permission == PermissionEnum.ViewOwnUserId && !HasAccessToOwnUser(context))
+                {
+                    context.Result = ResponseHelper.Error(requestId, "Access denied: You are not authorized.", 403);
+                    return;
+                }
                 break;
             }
         }
@@ -56,6 +61,19 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
         if (!hasPermission)
         {
             context.Result = ResponseHelper.Error(requestId, "Forbidden: User does not have permission", 403);
+            return;
         }
+    }
+
+    private bool HasAccessToOwnUser(AuthorizationFilterContext context)
+    {
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            return false;
+        }
+
+        var userIdFromRoute = context.RouteData.Values["user_id"]?.ToString();
+        return userIdFromRoute == currentUserId;
     }
 }
