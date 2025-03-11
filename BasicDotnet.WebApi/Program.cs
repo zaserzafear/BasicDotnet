@@ -19,6 +19,7 @@ public class Program
         builder.Services.AddControllers(options =>
         {
             options.Filters.Add<PermissionAuthorizationFilter>();
+            options.Filters.Add<OwnUserIdAuthorizationFilter>();
         });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
