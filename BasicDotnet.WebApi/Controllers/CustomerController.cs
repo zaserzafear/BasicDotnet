@@ -77,16 +77,9 @@ public class CustomerController : BaseController
     [HttpGet("{user_id}")]
     [HasPermission(PermissionNames.ViewAllCustomers)]
     [HasPermission(PermissionNames.ViewOwnCustomer)]
+    [HasOwnCustomerPermission(PermissionNames.ViewOwnCustomer)]
     public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
     {
-        var currentUserId = GetCurrentUserId();
-        var currentRole = GetCurrentRoleId();
-
-        if (currentRole == UserRole.Customer && currentUserId != user_id)
-        {
-            return Error("Access denied: You are not authorized to view details of other users with this role.", 403);
-        }
-
         var user = await _authService.GetUserByIdAsync(user_id, _userRole);
         return Success(user);
     }

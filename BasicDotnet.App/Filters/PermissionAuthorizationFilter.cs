@@ -28,11 +28,18 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
             .OfType<HasPermissionAttribute>()
             .ToList();
 
-        if (permissionAttributes == null || !permissionAttributes.Any())
+        var ownCustomerPermissionAttributes = endpoint?
+            .Metadata
+            .OfType<HasOwnCustomerPermissionAttribute>()
+            .ToList();
+
+        // If there are no permission attributes, continue with no permission check
+        if (permissionAttributes == null && ownCustomerPermissionAttributes == null)
         {
-            return; // No permission required
+            return;
         }
 
+        // Fetch role claim from user
         var roleClaim = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
         if (string.IsNullOrEmpty(roleClaim))
         {
@@ -40,16 +47,44 @@ public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
             return;
         }
 
+        var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (string.IsNullOrEmpty(currentUserId))
+        {
+            context.Result = new ForbidResult();
+            return;
+        }
+
+        // Track if permission checks are successful
+        bool hasPermission = false;
+
+        // Check generic permissions first
         foreach (var permissionAttribute in permissionAttributes)
         {
-            var hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.PermissionName);
+            hasPermission = await _permissionRepository.HasPermissionAsync(int.Parse(roleClaim), permissionAttribute.PermissionName);
 
             if (hasPermission)
             {
-                return; // User has permission
+                break; // If permission found, exit loop early
             }
         }
 
-        context.Result = new ForbidResult(); // No matching permission found
+        if (!hasPermission)
+        {
+            context.Result = new ForbidResult(); // No matching permission found
+            return;
+        }
+
+        // Check for 'ViewOwnCustomer' permission
+        foreach (var ownCustomerPermissionAttribute in ownCustomerPermissionAttributes)
+        {
+            // Assuming the user_id is passed as part of the route
+            var userIdFromRoute = context.RouteData.Values["user_id"]?.ToString();
+
+            if (userIdFromRoute != currentUserId)
+            {
+                context.Result = new ForbidResult(); // Deny access if the user is trying to access someone else's data
+                return;
+            }
+        }
     }
 }
