@@ -4,6 +4,7 @@ using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.Extensions;
 using BasicDotnet.WebApi.Filters;
 using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
 
 namespace BasicDotnet.WebApi;
 
@@ -20,6 +21,7 @@ public class Program
         {
             options.Filters.Add<PermissionAuthorizationFilter>();
         });
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
@@ -64,6 +66,30 @@ public class Program
         builder.Services.AddApplicationExtension(jwtSetting);
         builder.Services.AddInfrastructureExtension(configuration);
 
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = 429;
+
+            options.AddPolicy("fixed-by-ip", httpContext =>
+            {
+                var ipAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                    ?.Split(',').FirstOrDefault()?.Trim();
+
+                if (string.IsNullOrEmpty(ipAddress))
+                {
+                    ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+                }
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromSeconds(10)
+                    });
+            });
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -75,6 +101,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseRateLimiter();
 
         app.UseAuthorization();
         app.UseAuthorization();
