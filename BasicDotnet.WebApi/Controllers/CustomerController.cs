@@ -2,9 +2,11 @@
 using BasicDotnet.App.Services;
 using BasicDotnet.Domain.Enums;
 using BasicDotnet.Domain.Exceptions;
+using BasicDotnet.Domain.PublicVars;
 using BasicDotnet.WebApi.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace BasicDotnet.WebApi.Controllers;
 
@@ -20,6 +22,7 @@ public class CustomerController : BaseController
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.BruteForceProtection)]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
@@ -40,6 +43,7 @@ public class CustomerController : BaseController
 
     [AllowAnonymous]
     [HttpPost("login")]
+    [EnableRateLimiting(RateLimitPolicies.BruteForceProtection)]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         try
@@ -57,6 +61,7 @@ public class CustomerController : BaseController
     }
 
     [HttpGet("me")]
+    [EnableRateLimiting(RateLimitPolicies.UserRateLimit)]
     public async Task<IActionResult> GetCurrentUserAsync()
     {
         // Get the current user and role from claims
@@ -75,6 +80,7 @@ public class CustomerController : BaseController
     [HttpGet("{user_id}")]
     [HasPermission(PermissionEnum.ViewAllCustomers)]
     [HasPermission(PermissionEnum.ViewOwnUserId)]
+    [EnableRateLimiting(RateLimitPolicies.UserRateLimit)]
     public async Task<IActionResult> GetUserByIdAsync(Guid user_id)
     {
         var user = await _authService.GetUserByIdAsync(user_id, _userRole);

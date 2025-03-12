@@ -13,6 +13,17 @@ public class BaseController : ControllerBase
 {
     protected string RequestId => HttpContext.TraceIdentifier;
 
+    [HttpGet("GetHeaders")]
+    [AllowAnonymous]
+    public IActionResult GetHeaders()
+    {
+        var headers = HttpContext.Request.Headers
+            .Select(h => $"{h.Key}: {h.Value}")
+            .ToList();
+
+        return Ok(headers);
+    }
+
     protected IActionResult Success<T>(T data, string message = "Request successful", int statusCode = 200)
     {
         return ResponseHelper.Success(RequestId, data, message, statusCode);
