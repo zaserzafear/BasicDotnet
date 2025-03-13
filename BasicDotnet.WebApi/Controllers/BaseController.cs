@@ -9,6 +9,7 @@ namespace BasicDotnet.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[RateLimitPolicy(RateLimitPolicies.Public)]
 [Authorize]
 public class BaseController : ControllerBase
 {
@@ -16,7 +17,6 @@ public class BaseController : ControllerBase
 
     [HttpGet("GetHeaders")]
     [AllowAnonymous]
-    [RateLimitPolicy("sensitive")]
     public IActionResult GetHeaders()
     {
         var headers = HttpContext.Request.Headers

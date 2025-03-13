@@ -1,6 +1,6 @@
 ﻿using BasicDotnet.Domain.Enums;
 
-namespace BasicDotnet.WebApi.Attributes;
+namespace BasicDotnet.WebApi.Security.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class HasPermissionAttribute : Attribute

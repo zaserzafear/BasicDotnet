@@ -2,22 +2,44 @@
 
 namespace BasicDotnet.WebApi.RateLimit;
 
-public class RateLimitPolicyConfig
-{
-    public int Limit { get; set; }
-    public TimeSpan Window { get; set; }
-}
-
 public class RateLimitRedisAdapter
 {
     private readonly IDatabase _redisDb;
     private readonly Dictionary<string, RateLimitPolicyConfig> _policies;
     private readonly string _instanceName;
 
-    public RateLimitRedisAdapter(string connectionString, string instanceName)
+    private const string LuaScript = @"
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local window = tonumber(ARGV[2])
+        local limit = tonumber(ARGV[3])
+
+        -- Remove outdated entries
+        redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+
+        -- Get the current count
+        local count = redis.call('ZCARD', key)
+
+        if count >= limit then
+            return 1 -- Rate limit exceeded
+        end
+
+        -- Add new timestamp
+        redis.call('ZADD', key, now, now)
+
+        -- Set expiration (only update if not already set)
+        local ttl = redis.call('TTL', key)
+        if ttl < window then
+            redis.call('EXPIRE', key, window)
+        end
+
+        return 0 -- Allowed
+    ";
+
+    public RateLimitRedisAdapter(string connectionString, string instanceName, int db = -1)
     {
         var redis = ConnectionMultiplexer.Connect(connectionString);
-        _redisDb = redis.GetDatabase();
+        _redisDb = redis.GetDatabase(db);
         _policies = new Dictionary<string, RateLimitPolicyConfig>();
         _instanceName = instanceName;
     }
@@ -38,21 +60,26 @@ public class RateLimitRedisAdapter
             throw new InvalidOperationException($"Rate limit policy '{policyName}' not found.");
         }
 
-        key = $"{_instanceName}_{key}";
-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        key = $"{_instanceName}{key}";
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-        // Store timestamp in sorted set
-        await _redisDb.SortedSetAddAsync(key, now.ToString(), now);
+        var result = (long)await _redisDb.ScriptEvaluateAsync(
+            LuaScript,
+            new RedisKey[] { key },
+            new RedisValue[] { now, (long)policy.Window.TotalMilliseconds, policy.Limit }
+        );
 
-        // Remove expired entries outside the sliding window
-        await _redisDb.SortedSetRemoveRangeByScoreAsync(key, 0, now - (long)policy.Window.TotalSeconds);
+        return result == 1;
+    }
 
-        // Count remaining timestamps
-        var count = await _redisDb.SortedSetLengthAsync(key);
+    public async Task<int> GetRetryAfterAsync(string key, string policyName)
+    {
+        if (!_policies.TryGetValue(policyName, out var policy))
+        {
+            throw new InvalidOperationException($"Rate limit policy '{policyName}' not found.");
+        }
 
-        // Set expiration to ensure cleanup
-        await _redisDb.KeyExpireAsync(key, policy.Window);
-
-        return count > policy.Limit;
+        var ttl = await _redisDb.KeyTimeToLiveAsync(key);
+        return ttl.HasValue ? (int)ttl.Value.TotalSeconds : (int)policy.Window.TotalSeconds;
     }
 }

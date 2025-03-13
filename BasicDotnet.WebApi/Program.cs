@@ -2,8 +2,8 @@
 using BasicDotnet.App.Extensions;
 using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.Extensions;
-using BasicDotnet.WebApi.Filters;
 using BasicDotnet.WebApi.RateLimit;
+using BasicDotnet.WebApi.Security.Filters;
 using Microsoft.OpenApi.Models;
 
 namespace BasicDotnet.WebApi;
@@ -13,6 +13,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var configuration = builder.Configuration;
 
         // Add services to the container.
         builder.Services.AddHttpContextAccessor();
@@ -20,6 +21,31 @@ public class Program
         builder.Services.AddControllers(options =>
         {
             options.Filters.Add<PermissionAuthorizationFilter>();
+        });
+
+        // Register RateLimitRedisAdapter and define policies
+        builder.Services.AddSingleton<RateLimitRedisAdapter>(sp =>
+        {
+            // Load rate-limiting configuration from appsettings.json
+            var config = configuration.GetSection("RateLimiting");
+            var redisConnectionString = config.GetValue<string>("Redis:ConnectionString")!;
+            var redisInstanceName = config.GetValue<string>("Redis:InstanceName")!;
+            var sensitiveLimit = config.GetValue<int>($"{RateLimitPolicies.Sensitive}:Limit");
+            var sensitiveWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.Sensitive}:Window");
+            var publicLimit = config.GetValue<int>($"{RateLimitPolicies.Public}:Limit");
+            var publicWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.Public}:Window");
+            var apiKeyHeader = config.GetValue<string>($"{RateLimitPolicies.ApiKey}:Header");
+            var apiKeyLimit = config.GetValue<int>($"{RateLimitPolicies.ApiKey}:Limit");
+            var apiKeyWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.ApiKey}:Window");
+
+            var redisAdapter = new RateLimitRedisAdapter(redisConnectionString, redisInstanceName);
+
+            // Add Policies
+            redisAdapter.AddPolicy(RateLimitPolicies.Sensitive, sensitiveLimit, sensitiveWindows);
+            redisAdapter.AddPolicy(RateLimitPolicies.Public, publicLimit, publicWindows);
+            redisAdapter.AddPolicy(RateLimitPolicies.ApiKey, apiKeyLimit, apiKeyWindows);
+
+            return redisAdapter;
         });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -52,8 +78,6 @@ public class Program
             });
         });
 
-        var configuration = builder.Configuration;
-
         var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
         if (jwtSetting == null)
         {
@@ -65,32 +89,6 @@ public class Program
 
         builder.Services.AddApplicationExtension(jwtSetting);
         builder.Services.AddInfrastructureExtension(configuration);
-
-        //// Load rate-limiting configuration from appsettings.json
-        //var config = configuration.GetSection("RateLimiting");
-
-        //int rejectionStatusCode = config.GetValue<int>("RejectionStatusCode");
-        //int ipLimit = config.GetValue<int>("IpLimit");
-        //int ipWindowSeconds = config.GetValue<int>("IpWindowSeconds");
-        //int bruteForceLimit = config.GetValue<int>("BruteForceLimit");
-        //int bruteForceWindowSeconds = config.GetValue<int>("BruteForceWindowSeconds");
-        //int userLimitAuth = config.GetValue<int>("UserLimitAuthenticated");
-        //int userLimitUnauth = config.GetValue<int>("UserLimitUnauthenticated");
-        //int userWindowAuthMinutes = config.GetValue<int>("UserWindowAuthenticatedMinutes");
-        //int userWindowUnauthSeconds = config.GetValue<int>("UserWindowUnauthenticatedSeconds");
-
-        // Register RateLimitRedisAdapter and define policies
-        builder.Services.AddSingleton<RateLimitRedisAdapter>(sp =>
-        {
-            var redisAdapter = new RateLimitRedisAdapter("basicdotnet.redis:6379, password=basicdotnet", "BasicDotnet.WebApi");
-
-            // Add Policies
-            redisAdapter.AddPolicy("sensitive", 5, TimeSpan.FromMinutes(1));  // For login/register/OTP
-            redisAdapter.AddPolicy("public", 1000, TimeSpan.FromMinutes(1));  // For general API
-            redisAdapter.AddPolicy("apiKey", 50, TimeSpan.FromMinutes(5));    // For specific API keys
-
-            return redisAdapter;
-        });
 
         var app = builder.Build();
 
@@ -104,11 +102,10 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseAuthorization();
+        app.UseAuthorization();
+
         app.UseMiddleware<RateLimitMiddleware>();
-
-        app.UseAuthorization();
-        app.UseAuthorization();
-
 
         app.MapControllers();
 
