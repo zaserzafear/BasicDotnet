@@ -1,5 +1,6 @@
 ﻿using BasicDotnet.Domain.Enums;
 using BasicDotnet.WebApi.Helpers;
+using BasicDotnet.WebApi.RateLimit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ public class BaseController : ControllerBase
 
     [HttpGet("GetHeaders")]
     [AllowAnonymous]
+    [RateLimitPolicy("sensitive")]
     public IActionResult GetHeaders()
     {
         var headers = HttpContext.Request.Headers
