@@ -1,6 +1,11 @@
+using BasicDotnet.WebMvc.Configurations;
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<ApiConfig>(builder.Configuration.GetSection("ApiConfig"));
+
 // Add services to the container.
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddReverseProxy()
