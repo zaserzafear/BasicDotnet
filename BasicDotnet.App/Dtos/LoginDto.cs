@@ -1,3 +1,11 @@
-﻿namespace BasicDotnet.App.Dtos;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record LoginDto(string UserName, string Password);
+namespace BasicDotnet.App.Dtos;
+
+public record LoginDto(
+    [Required(ErrorMessage = "Username is required")]
+    string Username = "",
+
+    [Required(ErrorMessage = "Password is required")]
+    string Password = ""
+);

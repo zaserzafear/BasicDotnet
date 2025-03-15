@@ -37,7 +37,7 @@ public class AuthService
         return addedUser;
     }
 
-    public async Task<string?> AuthenticateAsync(string username, string password, UserRoleEnum userRole)
+    public async Task<TokenResponse?> AuthenticateAsync(string username, string password, UserRoleEnum userRole)
     {
         var user = await _userRepository.AuthenticateAsync(username, password, userRole);
         if (user == null)
@@ -58,7 +58,7 @@ public class AuthService
         return role;
     }
 
-    private string GenerateToken(UserBase user)
+    private TokenResponse GenerateToken(UserBase user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtSetting.SecretKey);
@@ -70,10 +70,13 @@ public class AuthService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        var accessTokenExpiration = DateTime.UtcNow.AddMinutes(_jwtSetting.ExpiredMinute);
+        var refreshTokenExpiration = DateTime.UtcNow.AddDays(_jwtSetting.RefreshTokenExpiredDays);
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSetting.ExpiredMinute),
+            Expires = accessTokenExpiration,
             Issuer = _jwtSetting.Issuer,
             Audience = _jwtSetting.Audience,
             SigningCredentials = new SigningCredentials(
@@ -81,7 +84,17 @@ public class AuthService
                 SecurityAlgorithms.HmacSha256Signature)
         };
 
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        var accessToken = tokenHandler.CreateToken(tokenDescriptor);
+        var refreshToken = Guid.NewGuid().ToString("N"); // Generate a strong refresh token (can improve if needed)
+
+        // Store refresh token securely in the database with user reference if required
+
+        return new TokenResponse
+        {
+            AccessToken = tokenHandler.WriteToken(accessToken),
+            AccessTokenExpires = accessTokenExpiration,
+            RefreshToken = refreshToken,
+            RefreshTokenExpires = refreshTokenExpiration
+        };
     }
 }

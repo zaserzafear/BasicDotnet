@@ -47,11 +47,11 @@ public class CustomerController : BaseController
     {
         try
         {
-            var token = await _authService.AuthenticateAsync(dto.UserName, dto.Password, _userRole);
+            var token = await _authService.AuthenticateAsync(dto.Username, dto.Password, _userRole);
             if (token == null)
                 return Error("Invalid username or password", 401);
 
-            return Success(new { Token = token }, "Login successful");
+            return Success(token, "Login successful");
         }
         catch (Exception ex)
         {

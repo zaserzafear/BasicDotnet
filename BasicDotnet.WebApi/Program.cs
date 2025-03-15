@@ -5,6 +5,7 @@ using BasicDotnet.WebApi.Extensions;
 using BasicDotnet.WebApi.RateLimit;
 using BasicDotnet.WebApi.RateLimit.Configurations;
 using BasicDotnet.WebApi.Security.Filters;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Models;
 
 namespace BasicDotnet.WebApi;
@@ -18,7 +19,11 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddHttpContextAccessor();
-
+        builder.Services.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.PropertyNamingPolicy = null;
+        });
+        builder.Services.AddRouting(options => options.LowercaseUrls = true);
         builder.Services.AddControllers(options =>
         {
             options.Filters.Add<PermissionAuthorizationFilter>();
