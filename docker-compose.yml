@@ -32,5 +32,12 @@ services:
       ConnectionStrings__DefaultConnection: Server=basicdotnet.mysql;User=admin;Password=admin;Port=3306;Database=basic-dotnet;characterset=utf8mb4;
       RateLimiting__Redis__ConnectionString: basicdotnet.redis:6379, password=basicdotnet
 
+  basicdotnet.webmvc:
+    image: ${DOCKER_REGISTRY-}basicdotnetwebmvc
+    build:
+      context: .
+      dockerfile: BasicDotnet.WebMvc/Dockerfile
+
 volumes:
   mysql-data: {}
+

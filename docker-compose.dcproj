@@ -6,8 +6,8 @@
     <DockerPublishLocally>False</DockerPublishLocally>
     <ProjectGuid>044a6488-2430-4c1b-ad0b-74875b64de22</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
-    <DockerServiceName>basicdotnet.webapi</DockerServiceName>
+    <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
+    <DockerServiceName>basicdotnet.webmvc</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.override.yml">
