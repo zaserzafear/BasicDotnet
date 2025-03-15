@@ -7,12 +7,11 @@ namespace BasicDotnet.WebMvc.Controllers;
 [Route("[controller]")]
 public class BaseController : Controller
 {
-    protected readonly string _registerApiEndpoint;
+    protected readonly string _baseApiUrl;
 
     public BaseController(IOptions<ApiConfig> apiConfigOption)
     {
         var apiConfig = apiConfigOption.Value;
-        var baseApiUrl = apiConfig.BaseApiUrl;
-        _registerApiEndpoint = $"{baseApiUrl}/Customer/register";
+        _baseApiUrl = apiConfig.BaseApiUrl;
     }
 }

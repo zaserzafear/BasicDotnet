@@ -7,8 +7,11 @@ namespace BasicDotnet.WebMvc.Controllers;
 
 public class AuthController : BaseController
 {
+    private readonly string _registerApiEndpoint;
+
     public AuthController(IOptions<ApiConfig> apiConfigOption) : base(apiConfigOption)
     {
+        _registerApiEndpoint = $"{_baseApiUrl}/Customer/register";
     }
 
     [HttpGet("register")]
