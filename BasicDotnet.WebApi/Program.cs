@@ -24,6 +24,30 @@ public class Program
             options.Filters.Add<PermissionAuthorizationFilter>();
         });
 
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        builder.Services.AddCors(options =>
+        {
+            if (allowedOrigins.Length > 0 && allowedOrigins[0] == "*")
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            }
+            else
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins(allowedOrigins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            }
+        });
+
         // Register RateLimitRedisAdapter and define policies
         builder.Services.Configure<RateLimitingOptions>(configuration.GetSection("RateLimiting"));
         builder.Services.AddSingleton<RateLimitRedisAdapter>();
@@ -81,6 +105,8 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseCors();
 
         app.UseAuthorization();
         app.UseAuthorization();
