@@ -3,6 +3,7 @@ using BasicDotnet.App.Extensions;
 using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.Extensions;
 using BasicDotnet.WebApi.RateLimit;
+using BasicDotnet.WebApi.RateLimit.Configurations;
 using BasicDotnet.WebApi.Security.Filters;
 using Microsoft.OpenApi.Models;
 
@@ -24,29 +25,8 @@ public class Program
         });
 
         // Register RateLimitRedisAdapter and define policies
-        builder.Services.AddSingleton<RateLimitRedisAdapter>(sp =>
-        {
-            // Load rate-limiting configuration from appsettings.json
-            var config = configuration.GetSection("RateLimiting");
-            var redisConnectionString = config.GetValue<string>("Redis:ConnectionString")!;
-            var redisInstanceName = config.GetValue<string>("Redis:InstanceName")!;
-            var sensitiveLimit = config.GetValue<int>($"{RateLimitPolicies.Sensitive}:Limit");
-            var sensitiveWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.Sensitive}:Window");
-            var publicLimit = config.GetValue<int>($"{RateLimitPolicies.Public}:Limit");
-            var publicWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.Public}:Window");
-            var apiKeyHeader = config.GetValue<string>($"{RateLimitPolicies.ApiKey}:Header");
-            var apiKeyLimit = config.GetValue<int>($"{RateLimitPolicies.ApiKey}:Limit");
-            var apiKeyWindows = config.GetValue<TimeSpan>($"{RateLimitPolicies.ApiKey}:Window");
-
-            var redisAdapter = new RateLimitRedisAdapter(redisConnectionString, redisInstanceName);
-
-            // Add Policies
-            redisAdapter.AddPolicy(RateLimitPolicies.Sensitive, sensitiveLimit, sensitiveWindows);
-            redisAdapter.AddPolicy(RateLimitPolicies.Public, publicLimit, publicWindows);
-            redisAdapter.AddPolicy(RateLimitPolicies.ApiKey, apiKeyLimit, apiKeyWindows);
-
-            return redisAdapter;
-        });
+        builder.Services.Configure<RateLimitingOptions>(configuration.GetSection("RateLimiting"));
+        builder.Services.AddSingleton<RateLimitRedisAdapter>();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();

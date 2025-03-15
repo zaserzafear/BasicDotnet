@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using BasicDotnet.WebApi.RateLimit.Configurations;
+using Microsoft.Extensions.Options;
+using System.Net;
 
 namespace BasicDotnet.WebApi.RateLimit;
 
@@ -9,6 +11,7 @@ public class RateLimitMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly RateLimitRedisAdapter _rateLimitAdapter;
+    private readonly RateLimitingOptions _rateLimitingOptions;
     private readonly ILogger<RateLimitMiddleware> _logger;
 
     /// <summary>
@@ -17,9 +20,11 @@ public class RateLimitMiddleware
     public RateLimitMiddleware(
         RequestDelegate next,
         RateLimitRedisAdapter rateLimitAdapter,
+        IOptions<RateLimitingOptions> rateLimitingOptions,
         ILogger<RateLimitMiddleware> logger)
     {
         _next = next;
+        _rateLimitingOptions = rateLimitingOptions.Value;
         _rateLimitAdapter = rateLimitAdapter;
         _logger = logger;
     }
@@ -27,52 +32,73 @@ public class RateLimitMiddleware
     /// <summary>
     /// Core middleware logic to enforce rate limiting.
     /// </summary>
-    /// <param name="context">The HTTP context for the current request.</param>
     public async Task InvokeAsync(HttpContext context)
     {
-        // Check if endpoint metadata contains a rate limit policy.
         var endpoint = context.GetEndpoint();
         var policy = endpoint?.Metadata.GetMetadata<RateLimitPolicy>()
                      ?? context.GetRouteData()?.Values["controller"]?.GetType()?.GetCustomAttributes(true)
                           .OfType<RateLimitPolicy>().FirstOrDefault();
 
-        if (policy == null)
+        // Skip rate limiting if no policy or explicitly set to "None"
+        if (policy == null || policy.PolicyName == RateLimitPolicies.None)
         {
-            await _next(context); // Continue if no policy is defined.
+            await _next(context);
             return;
         }
 
-        // Generate a unique client identifier (IP or username) for rate limiting.
         string? clientKey = GetClientKey(context);
         if (clientKey == null)
         {
-            await _next(context); // Continue if no valid client key is found.
+            await _next(context);
             return;
         }
 
-        // Construct the rate limit key for Redis storage.
         var key = $"{policy.PolicyName}:{clientKey}";
 
-        // Check if the request exceeds the allowed limit.
+        switch (policy.PolicyName)
+        {
+            case RateLimitPolicies.Sensitive:
+                key = $"{policy.PolicyName}:{clientKey}";
+                break;
+
+            case RateLimitPolicies.Public:
+                key = $"{policy.PolicyName}:{clientKey}";
+                break;
+
+            case RateLimitPolicies.ApiKey:
+                var apiKey = context.Request.Headers[_rateLimitingOptions.ApiKey.Header].FirstOrDefault();
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { error = "API Key is required" });
+                    return;
+                }
+                clientKey = apiKey; // ✅ Ensure the correct key is used
+                key = $"{policy.PolicyName}:{clientKey}";
+                break;
+
+            default:
+                _logger.LogWarning("Unknown rate limit policy: {PolicyName}", policy.PolicyName);
+                break;
+        }
+
+        // Check rate limits in Redis
         if (await _rateLimitAdapter.IsLimitExceededAsync(key, policy.PolicyName))
         {
             var retryAfterSeconds = await _rateLimitAdapter.GetRetryAfterAsync(key, policy.PolicyName);
 
             context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
             context.Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
-            context.Response.ContentType = "application/json";
 
-            var response = new
+            await context.Response.WriteAsJsonAsync(new
             {
                 error = "Rate limit exceeded",
                 retryAfter = $"{retryAfterSeconds} seconds",
-            };
+            });
 
-            await context.Response.WriteAsJsonAsync(response);
             return;
         }
 
-        // Proceed to the next middleware in the pipeline.
         await _next(context);
     }
 
@@ -81,15 +107,9 @@ public class RateLimitMiddleware
     /// </summary>
     private string? GetClientKey(HttpContext context)
     {
-        // Extract the client's IP address as a fallback identifier.
         var ipAddress = GetClientIpAddress(context);
-
-        // Extract the username if authenticated via JWT.
         var userName = context.User.Identity?.Name;
-        bool isAuthenticated = !string.IsNullOrEmpty(userName);
-
-        // Use the username if authenticated; otherwise, fallback to IP address.
-        return isAuthenticated ? userName : ipAddress;
+        return !string.IsNullOrEmpty(userName) ? userName : ipAddress;
     }
 
     /// <summary>
@@ -97,20 +117,15 @@ public class RateLimitMiddleware
     /// </summary>
     private string GetClientIpAddress(HttpContext httpContext)
     {
-        // Check for the "X-Forwarded-For" header, which may contain multiple IPs.
         var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-
         if (!string.IsNullOrWhiteSpace(forwardedFor))
         {
             var clientIp = forwardedFor.Split(',').FirstOrDefault()?.Trim();
-
             if (IPAddress.TryParse(clientIp, out var ipAddress))
             {
                 return ipAddress.ToString();
             }
         }
-
-        // Fallback to the remote IP address in case "X-Forwarded-For" is not present.
         return httpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unknown client";
     }
 }

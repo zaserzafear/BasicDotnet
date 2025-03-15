@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using BasicDotnet.WebApi.RateLimit.Configurations;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 
 namespace BasicDotnet.WebApi.RateLimit;
 
@@ -36,21 +38,24 @@ public class RateLimitRedisAdapter
         return 0 -- Allowed
     ";
 
-    public RateLimitRedisAdapter(string connectionString, string instanceName, int db = -1)
+    public RateLimitRedisAdapter(IOptions<RateLimitingOptions> rateLimitingOptions)
     {
-        var redis = ConnectionMultiplexer.Connect(connectionString);
-        _redisDb = redis.GetDatabase(db);
-        _policies = new Dictionary<string, RateLimitPolicyConfig>();
-        _instanceName = instanceName;
-    }
+        var options = rateLimitingOptions.Value;
 
-    public void AddPolicy(string policyName, int limit, TimeSpan window)
-    {
-        _policies[policyName] = new RateLimitPolicyConfig
-        {
-            Limit = limit,
-            Window = window
-        };
+        var redis = ConnectionMultiplexer.Connect(options.Redis.ConnectionString);
+        _redisDb = redis.GetDatabase();
+        _instanceName = options.Redis.InstanceName;
+        _policies = new Dictionary<string, RateLimitPolicyConfig>();
+
+        // Load policies from configuration
+        if (options.Sensitive != null)
+            _policies[RateLimitPolicies.Sensitive] = new RateLimitPolicyConfig { Limit = options.Sensitive.Limit, Window = options.Sensitive.Window };
+
+        if (options.Public != null)
+            _policies[RateLimitPolicies.Public] = new RateLimitPolicyConfig { Limit = options.Public.Limit, Window = options.Public.Window };
+
+        if (options.ApiKey != null)
+            _policies[RateLimitPolicies.ApiKey] = new RateLimitPolicyConfig { Limit = options.ApiKey.Limit, Window = options.ApiKey.Window };
     }
 
     public async Task<bool> IsLimitExceededAsync(string key, string policyName)
