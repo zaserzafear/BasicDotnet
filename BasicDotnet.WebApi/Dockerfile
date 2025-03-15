@@ -4,7 +4,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
+ENV ASPNETCORE_HTTP_PORTS=80
+EXPOSE 80
 
 
 # This stage is used to build the service project

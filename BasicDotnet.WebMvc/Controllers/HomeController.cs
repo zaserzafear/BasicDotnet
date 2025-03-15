@@ -1,6 +1,6 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using BasicDotnet.WebMvc.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace BasicDotnet.WebMvc.Controllers;
 
