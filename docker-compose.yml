@@ -13,6 +13,15 @@ services:
     ports:
       - 58237:3306
 
+  basicdotnet.redis:
+    image: redis:7
+    restart: unless-stopped
+    command: '--requirepass basicdotnet'
+    environment:
+      TZ: Asia/Bangkok
+    ports:
+      - 61038:6379
+
   basicdotnet.webapi:
     image: ${DOCKER_REGISTRY-}basicdotnetwebapi
     build:
@@ -21,6 +30,7 @@ services:
     environment:
       TZ: Asia/Bangkok
       ConnectionStrings__DefaultConnection: Server=basicdotnet.mysql;User=admin;Password=admin;Port=3306;Database=basic-dotnet;characterset=utf8mb4;
+      RateLimiting__Redis__ConnectionString: basicdotnet.redis:6379, password=basicdotnet
 
 volumes:
   mysql-data: {}

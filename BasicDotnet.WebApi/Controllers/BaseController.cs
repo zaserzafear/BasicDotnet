@@ -1,5 +1,6 @@
 ﻿using BasicDotnet.Domain.Enums;
 using BasicDotnet.WebApi.Helpers;
+using BasicDotnet.WebApi.RateLimit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -8,21 +9,11 @@ namespace BasicDotnet.WebApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[RateLimitPolicy(RateLimitPolicies.Public)]
 [Authorize]
 public class BaseController : ControllerBase
 {
     protected string RequestId => HttpContext.TraceIdentifier;
-
-    [HttpGet("GetHeaders")]
-    [AllowAnonymous]
-    public IActionResult GetHeaders()
-    {
-        var headers = HttpContext.Request.Headers
-            .Select(h => $"{h.Key}: {h.Value}")
-            .ToList();
-
-        return Ok(headers);
-    }
 
     protected IActionResult Success<T>(T data, string message = "Request successful", int statusCode = 200)
     {

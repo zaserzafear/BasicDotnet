@@ -1,11 +1,11 @@
 ﻿using BasicDotnet.Domain.Enums;
 using BasicDotnet.Infra.Repositories;
-using BasicDotnet.WebApi.Attributes;
 using BasicDotnet.WebApi.Helpers;
+using BasicDotnet.WebApi.Security.Attributes;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
 
-namespace BasicDotnet.WebApi.Filters;
+namespace BasicDotnet.WebApi.Security.Filters;
 
 public class PermissionAuthorizationFilter : IAsyncAuthorizationFilter
 {
