@@ -86,14 +86,15 @@ public class RateLimitMiddleware
         if (await _rateLimitAdapter.IsLimitExceededAsync(key, policy.PolicyName))
         {
             var retryAfterSeconds = await _rateLimitAdapter.GetRetryAfterAsync(key, policy.PolicyName);
-
-            context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+            var statusCode = (int)HttpStatusCode.TooManyRequests;
+            context.Response.StatusCode = statusCode;
             context.Response.Headers["Retry-After"] = retryAfterSeconds.ToString();
 
             await context.Response.WriteAsJsonAsync(new
             {
-                error = "Rate limit exceeded",
-                retryAfter = $"{retryAfterSeconds} seconds",
+                message = $"Rate limit exceeded. RetryAfter {retryAfterSeconds} seconds",
+                requestId = context.TraceIdentifier,
+                statusCode = statusCode,
             });
 
             return;
