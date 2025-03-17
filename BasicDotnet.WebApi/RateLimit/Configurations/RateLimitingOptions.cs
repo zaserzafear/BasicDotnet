@@ -12,6 +12,7 @@ public class RedisOptions
 {
     public string ConnectionString { get; set; } = string.Empty;
     public string InstanceName { get; set; } = string.Empty;
+    public int Db { get; set; }
 }
 
 public class RateLimitPolicyOptions
@@ -24,4 +25,3 @@ public class ApiKeyRateLimitOptions : RateLimitPolicyOptions
 {
     public string Header { get; set; } = string.Empty;
 }
-

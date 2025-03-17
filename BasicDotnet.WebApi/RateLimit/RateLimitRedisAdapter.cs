@@ -43,7 +43,7 @@ public class RateLimitRedisAdapter
         var options = rateLimitingOptions.Value;
 
         var redis = ConnectionMultiplexer.Connect(options.Redis.ConnectionString);
-        _redisDb = redis.GetDatabase();
+        _redisDb = redis.GetDatabase(options.Redis.Db);
         _instanceName = options.Redis.InstanceName;
         _policies = new Dictionary<string, RateLimitPolicyConfig>();
 
