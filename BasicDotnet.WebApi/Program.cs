@@ -1,7 +1,6 @@
 ﻿using BasicDotnet.App.Configurations;
 using BasicDotnet.App.Extensions;
 using BasicDotnet.Infra.Extensions;
-using BasicDotnet.WebApi.Extensions;
 using BasicDotnet.WebApi.RateLimit;
 using BasicDotnet.WebApi.RateLimit.Configurations;
 using BasicDotnet.WebApi.Security.Filters;
@@ -93,10 +92,10 @@ public class Program
             throw new ArgumentNullException(nameof(jwtSetting));
         }
 
+        builder.Services.AddApplicationExtension(jwtSetting);
         builder.Services.AddJwtAuthentication(jwtSetting);
         builder.Services.AddAuthentication();
 
-        builder.Services.AddApplicationExtension(jwtSetting);
         builder.Services.AddInfrastructureExtension(configuration);
 
         var app = builder.Build();
@@ -113,7 +112,7 @@ public class Program
 
         app.UseCors();
 
-        app.UseAuthorization();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseMiddleware<RateLimitMiddleware>();

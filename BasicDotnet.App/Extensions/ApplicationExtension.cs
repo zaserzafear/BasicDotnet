@@ -8,7 +8,6 @@ public static class ApplicationExtension
 {
     public static IServiceCollection AddApplicationExtension(this IServiceCollection services, JwtSetting jwtSetting)
     {
-        services.AddSingleton(jwtSetting);
         services.AddScoped<AuthService>();
 
         return services;

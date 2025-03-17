@@ -2,5 +2,6 @@
 
 public class ApiConfig
 {
-    public string BaseApiUrl { get; set; } = string.Empty;
+    public string BaseApiUrlFrontend { get; set; } = string.Empty;
+    public string BaseApiUrlBackend { get; set; } = string.Empty;
 }

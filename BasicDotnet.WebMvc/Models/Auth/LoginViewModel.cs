@@ -6,5 +6,4 @@ public class LoginViewModel
 {
     public LoginDto LoginDto { get; set; } = new();
     public string LoginApiEndpoint { get; set; } = string.Empty;
-
 }

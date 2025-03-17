@@ -3,15 +3,20 @@
 @{
     ViewData["Title"] = "Login";
 }
+@if (ViewData["Error"] != null)
+{
+    <div class="alert alert-danger">@ViewData["Error"]</div>
+}
 
 <h2>Login</h2>
 
 <p>API URL: @Model.LoginApiEndpoint</p>
 
-<form id="loginForm">
+<form id="loginForm" method="post" asp-action="Login">
+    <input type="hidden" asp-for="LoginApiEndpoint" value="@Model.LoginApiEndpoint" />
     <div class="form-group">
         <label asp-for="LoginDto.Username"></label>
-        <input asp-for="LoginDto.Username" class="form-control" id="LoginDto_UserName" />
+        <input asp-for="LoginDto.Username" class="form-control" id="LoginDto_UserName" value="@Model.LoginDto.Username" />
         <span asp-validation-for="LoginDto.Username" class="text-danger"></span>
     </div>
 
@@ -26,40 +31,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById("loginForm").addEventListener("submit", async function (event) {
-                event.preventDefault(); // Prevent normal form submission
-
-                if (!$(this).valid()) { // Ensure validation is successful before submitting
-                    return;
-                }
-
-                // Get form data
-                const formData = new FormData(this);
-                const userData = {
-                    Username: formData.get("LoginDto.Username"),
-                    Password: formData.get("LoginDto.Password")
-                };
-
-                try {
-                    const response = await apiClient.post("@Model.LoginApiEndpoint", userData);
-
-                    const accessToken = response.data.accessToken;
-                    if (!accessToken) {
-                        throw new Error("AccessToken not received from API.");
-                    }
-
-                    await apiClient.post("@Url.Action("set-auth-cookie", "Auth")", response.data);
-
-                    alert("Login successful!");
-
-                    window.location.href = "@Url.Action("me", "Auth")";
-                } catch (error) {
-                    alert("Login failed: " + error.message);
-                }
-            });
-        });
-    </script>
 }

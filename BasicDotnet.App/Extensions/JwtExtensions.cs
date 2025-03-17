@@ -1,9 +1,11 @@
 ﻿using BasicDotnet.App.Configurations;
+using BasicDotnet.App.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace BasicDotnet.WebApi.Extensions;
+namespace BasicDotnet.App.Extensions;
 
 public static class JwtExtensions
 {
@@ -16,6 +18,8 @@ public static class JwtExtensions
         {
             throw new InvalidOperationException("JWT configuration settings are missing.");
         }
+
+        services.AddSingleton(jwtSetting);
 
         // Add Authentication and configure JwtBearer
         services.AddAuthentication(options =>
@@ -38,6 +42,7 @@ public static class JwtExtensions
             };
         });
 
+        services.AddSingleton<TokenService>();
         return services;
     }
 }

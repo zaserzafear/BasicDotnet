@@ -1,5 +1,7 @@
 ﻿using BasicDotnet.App.Services;
+using BasicDotnet.Infra.Services;
 using BasicDotnet.WebMvc.Configurations;
+using BasicDotnet.WebMvc.Constants;
 using BasicDotnet.WebMvc.Models.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -11,10 +13,13 @@ public class AuthController : BaseController
     private readonly string _registerApiEndpoint;
     private readonly string _loginApiEndpoint;
 
-    public AuthController(IOptions<ApiConfig> apiConfigOption) : base(apiConfigOption)
+    private readonly HttpClientService _httpClientService;
+
+    public AuthController(IOptions<ApiConfig> apiConfigOption, HttpClientService httpClientService) : base(apiConfigOption)
     {
-        _registerApiEndpoint = $"{_baseApiUrl}/customer/register";
-        _loginApiEndpoint = $"{_baseApiUrl}/customer/login";
+        _registerApiEndpoint = $"{_baseApiUrlFrontend}/customer/register";
+        _loginApiEndpoint = $"{_baseApiUrlBackend}/customer/login";
+        _httpClientService = httpClientService;
     }
 
     [HttpGet("register")]
@@ -33,39 +38,50 @@ public class AuthController : BaseController
     {
         var model = new LoginViewModel
         {
-            LoginApiEndpoint = _loginApiEndpoint
+            LoginApiEndpoint = Url.Action("Login", ControllerName)!
         };
 
         return View(model);
     }
 
-    [HttpPost("set-auth-cookie")]
-    public IActionResult SetAuthCookie([FromBody] TokenResponse tokenResponse)
+    [HttpPost("login")]
+    public async Task<IActionResult> LoginAsync([FromForm] LoginViewModel model)
     {
-        if (string.IsNullOrEmpty(tokenResponse.AccessToken))
+        if (!ModelState.IsValid)
         {
-            return BadRequest("Invalid token");
+            ViewData["Error"] = "Invalid input. Please check your credentials.";
+            return View(model);
         }
 
-        // Store JWT token as a secure, HTTP-only cookie
-        Response.Cookies.Append("accessToken", tokenResponse.AccessToken, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = tokenResponse.AccessTokenExpires
-        });
+        var result = await _httpClientService.PostAsync<TokenResponse>(AuthConstants.HttpClientName, _loginApiEndpoint, model.LoginDto);
 
-        // Store Refresh Token (optional)
-        Response.Cookies.Append("refreshToken", tokenResponse.RefreshToken, new CookieOptions
+        if (result?.Data is not { AccessToken: { Length: > 0 } })
+        {
+            ViewData["Error"] = result?.Message;
+            return View(model);
+        }
+
+        SetAuthCookies(result.Data);
+        return RedirectToAction("Me", ControllerName);
+    }
+
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        return View();
+    }
+
+    private void SetAuthCookies(TokenResponse tokenResponse)
+    {
+        var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
             Expires = tokenResponse.RefreshTokenExpires
-        });
+        };
 
-        return Ok(new { message = "Token stored in cookies" });
+        Response.Cookies.Append(AuthConstants.AccessToken, tokenResponse.AccessToken, cookieOptions);
+        Response.Cookies.Append(AuthConstants.RefreshToken, tokenResponse.RefreshToken, cookieOptions);
     }
-
 }

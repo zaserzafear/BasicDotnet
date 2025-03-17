@@ -10,7 +10,8 @@ public static class ResponseHelper
         {
             data,
             message,
-            requestId = requestId
+            requestId = requestId,
+            statusCode = statusCode,
         })
         {
             StatusCode = statusCode
@@ -22,7 +23,8 @@ public static class ResponseHelper
         return new ObjectResult(new
         {
             message,
-            requestId = requestId
+            requestId = requestId,
+            statusCode = statusCode,
         })
         {
             StatusCode = statusCode
