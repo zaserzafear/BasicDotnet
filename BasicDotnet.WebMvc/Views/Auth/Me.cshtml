@@ -1,5 +1,44 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model BasicDotnet.WebMvc.Models.Auth.MeViewModel
+
 @{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>My Profile</h2>
+
+<p>API URL: @Model.MeApiEndpoint</p>
+
+<div id="userProfile">
+    <p><strong>ID:</strong> <span id="userId"></span></p>
+    <p><strong>Username:</strong> <span id="username"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Role ID:</strong> <span id="roleId"></span></p>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            try {
+                const token = "@Model.AccessToken"; // Retrieve stored JWT
+                if (!token) {
+                    alert("Unauthorized: No token found.");
+                    window.location.href = "@Url.Action("Login", "Auth")";
+                    return;
+                }
+
+                const response = await apiClient.get("@Model.MeApiEndpoint", {
+                    Authorization: `Bearer ${token}`
+                });
+
+                const userData = response.data;
+                document.getElementById("userId").textContent = userData.id;
+                document.getElementById("username").textContent = userData.username;
+                document.getElementById("email").textContent = userData.email;
+                document.getElementById("roleId").textContent = userData.roleId;
+            } catch (error) {
+                alert("Failed to fetch profile: " + error.message);
+                console.error(error);
+            }
+        });
+    </script>
 }

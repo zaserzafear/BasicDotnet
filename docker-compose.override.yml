@@ -4,12 +4,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
     ports:
-      - "80"
+      - "61641:80"
 
   basicdotnet.webmvc:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
     ports:
-      - "80"
+      - "61642:80"
 

@@ -3,6 +3,7 @@ using BasicDotnet.Infra.Services;
 using BasicDotnet.WebMvc.Configurations;
 using BasicDotnet.WebMvc.Constants;
 using BasicDotnet.WebMvc.Models.Auth;
+using BasicDotnet.WebMvc.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -12,14 +13,21 @@ public class AuthController : BaseController
 {
     private readonly string _registerApiEndpoint;
     private readonly string _loginApiEndpoint;
+    private readonly string _meApiEndpoint;
 
     private readonly HttpClientService _httpClientService;
+    private readonly AuthCookieService _authCookieService;
 
-    public AuthController(IOptions<ApiConfig> apiConfigOption, HttpClientService httpClientService) : base(apiConfigOption)
+    public AuthController(IOptions<ApiConfig> apiConfigOption,
+        HttpClientService httpClientService,
+        AuthCookieService authCookieService)
+        : base(apiConfigOption)
     {
         _registerApiEndpoint = $"{_baseApiUrlFrontend}/customer/register";
         _loginApiEndpoint = $"{_baseApiUrlBackend}/customer/login";
+        _meApiEndpoint = $"{_baseApiUrlFrontend}/customer/me";
         _httpClientService = httpClientService;
+        _authCookieService = authCookieService;
     }
 
     [HttpGet("register")]
@@ -27,7 +35,7 @@ public class AuthController : BaseController
     {
         var model = new RegisterViewModel
         {
-            RegisterApiEndpoint = _registerApiEndpoint
+            RegisterApiEndpoint = _registerApiEndpoint,
         };
 
         return View(model);
@@ -38,7 +46,7 @@ public class AuthController : BaseController
     {
         var model = new LoginViewModel
         {
-            LoginApiEndpoint = Url.Action("Login", ControllerName)!
+            LoginApiEndpoint = Url.Action("Login", ControllerName)!,
         };
 
         return View(model);
@@ -61,27 +69,19 @@ public class AuthController : BaseController
             return View(model);
         }
 
-        SetAuthCookies(result.Data);
+        _authCookieService.SetAuthCookies(HttpContext, result.Data);
         return RedirectToAction("Me", ControllerName);
     }
 
     [HttpGet("me")]
     public IActionResult Me()
     {
-        return View();
-    }
-
-    private void SetAuthCookies(TokenResponse tokenResponse)
-    {
-        var cookieOptions = new CookieOptions
+        var model = new MeViewModel
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = tokenResponse.RefreshTokenExpires
+            AccessToken = GetCookie(AuthConstants.AccessToken)!,
+            MeApiEndpoint = _meApiEndpoint,
         };
 
-        Response.Cookies.Append(AuthConstants.AccessToken, tokenResponse.AccessToken, cookieOptions);
-        Response.Cookies.Append(AuthConstants.RefreshToken, tokenResponse.RefreshToken, cookieOptions);
+        return View(model);
     }
 }

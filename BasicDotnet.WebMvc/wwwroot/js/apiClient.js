@@ -1,10 +1,11 @@
 ﻿const apiClient = {
-    request: async function (method, url, data = null) {
+    request: async function (method, url, data = null, headers = {}) {
         try {
             const options = {
                 method: method,
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    ...headers // Add custom headers here
                 }
             };
 
@@ -26,19 +27,19 @@
         }
     },
 
-    get: function (url) {
-        return this.request("GET", url);
+    get: function (url, headers = {}) {
+        return this.request("GET", url, null, headers);
     },
 
-    post: function (url, data) {
-        return this.request("POST", url, data);
+    post: function (url, data, headers = {}) {
+        return this.request("POST", url, data, headers);
     },
 
-    put: function (url, data) {
-        return this.request("PUT", url, data);
+    put: function (url, data, headers = {}) {
+        return this.request("PUT", url, data, headers);
     },
 
-    delete: function (url) {
-        return this.request("DELETE", url);
+    delete: function (url, headers = {}) {
+        return this.request("DELETE", url, null, headers);
     }
 };

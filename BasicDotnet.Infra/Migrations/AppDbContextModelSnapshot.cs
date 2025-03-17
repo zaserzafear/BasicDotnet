@@ -165,8 +165,18 @@ namespace BasicDotnet.Infra.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 2
+                        },
+                        new
+                        {
                             RoleId = 2,
                             PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 2
                         },
                         new
                         {

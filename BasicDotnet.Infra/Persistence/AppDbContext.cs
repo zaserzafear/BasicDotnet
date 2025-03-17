@@ -44,9 +44,11 @@ internal class AppDbContext : DbContext
         builder.Entity<RolePermission>().HasData(
             // SuperAdmin has permission to view all customers and their own customer
             new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // SuperAdmin can view all customers
+            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewOwnUserId },  // SuperAdmin can view own user_id
 
             // Admin can view all customers and their own customer
             new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // Admin can view all customers
+            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewOwnUserId },  // Admin can view own user_id
 
             // Customer can only view their own customer
             new RolePermission { RoleId = (int)UserRoleEnum.Customer, PermissionId = (int)PermissionEnum.ViewOwnUserId }   // Customer can view their own user_id customer

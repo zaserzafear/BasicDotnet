@@ -18,4 +18,9 @@ public class BaseController : Controller
         _baseApiUrlFrontend = apiConfig.BaseApiUrlFrontend;
         _baseApiUrlBackend = apiConfig.BaseApiUrlBackend;
     }
+
+    protected string? GetCookie(string cookieName)
+    {
+        return Request.Cookies[cookieName];
+    }
 }

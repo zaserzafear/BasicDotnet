@@ -1,5 +1,6 @@
 ﻿using BasicDotnet.App.Services;
 using BasicDotnet.WebMvc.Constants;
+using BasicDotnet.WebMvc.Services;
 
 namespace BasicDotnet.WebMvc.Middleware;
 
@@ -7,21 +8,23 @@ public class JwtRefreshMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly TokenService _tokenService;
+    private readonly AuthCookieService _authCookieService;
     private readonly ILogger<JwtRefreshMiddleware> _logger;
 
     public JwtRefreshMiddleware(
         RequestDelegate next,
         TokenService tokenService,
+        AuthCookieService authCookieService,
         ILogger<JwtRefreshMiddleware> logger)
     {
         _next = next;
         _tokenService = tokenService;
+        _authCookieService = authCookieService;
         _logger = logger;
     }
 
     public async Task Invoke(HttpContext context)
     {
-        // 1. Read tokens from cookies
         var accessToken = context.Request.Cookies[AuthConstants.AccessToken];
         var refreshToken = context.Request.Cookies[AuthConstants.RefreshToken];
 
@@ -34,7 +37,6 @@ public class JwtRefreshMiddleware
 
         try
         {
-            // 2. Regenerate the token using TokenService
             var tokenResponse = _tokenService.RegenerateToken(accessToken, refreshToken);
             if (tokenResponse == null)
             {
@@ -43,8 +45,7 @@ public class JwtRefreshMiddleware
                 return;
             }
 
-            // 3. Set new cookies with refreshed token
-            SetAuthCookies(context, tokenResponse);
+            _authCookieService.SetAuthCookies(context, tokenResponse);
             _logger.LogDebug("JWT refreshed successfully.");
         }
         catch (Exception ex)
@@ -53,19 +54,5 @@ public class JwtRefreshMiddleware
         }
 
         await _next(context);
-    }
-
-    private void SetAuthCookies(HttpContext context, TokenResponse tokenResponse)
-    {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = tokenResponse.RefreshTokenExpires // Keep same expiration as refresh token
-        };
-
-        context.Response.Cookies.Append(AuthConstants.AccessToken, tokenResponse.AccessToken, cookieOptions);
-        context.Response.Cookies.Append(AuthConstants.RefreshToken, tokenResponse.RefreshToken, cookieOptions);
     }
 }

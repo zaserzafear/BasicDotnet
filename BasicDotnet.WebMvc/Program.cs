@@ -3,6 +3,7 @@ using BasicDotnet.App.Extensions;
 using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebMvc.Configurations;
 using BasicDotnet.WebMvc.Middleware;
+using BasicDotnet.WebMvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -25,6 +26,7 @@ if (jwtSetting == null)
 
 builder.Services.AddJwtAuthentication(jwtSetting);
 builder.Services.AddAuthentication();
+builder.Services.AddSingleton<AuthCookieService>();
 
 builder.Services.AddHttpClientExtensions();
 

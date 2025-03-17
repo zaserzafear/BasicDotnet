@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BasicDotnet.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250311093142_SeedRolePermission")]
-    partial class SeedRolePermission
+    [Migration("20250317103112_InitialBasicDotnet")]
+    partial class InitialBasicDotnet
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -168,8 +168,18 @@ namespace BasicDotnet.Infra.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 2
+                        },
+                        new
+                        {
                             RoleId = 2,
                             PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 2
                         },
                         new
                         {
