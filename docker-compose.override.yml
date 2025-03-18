@@ -1,6 +1,6 @@
 services:
   basicdotnet.webapi:
-    environment:    
+    environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
     ports:
@@ -11,5 +11,4 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=80
     ports:
-      - "61642:80"
-
+      - "80"
