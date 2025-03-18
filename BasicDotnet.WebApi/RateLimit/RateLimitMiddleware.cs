@@ -124,7 +124,7 @@ public class RateLimitMiddleware
             var clientIp = forwardedFor.Split(',').FirstOrDefault()?.Trim();
             if (IPAddress.TryParse(clientIp, out var ipAddress))
             {
-                return ipAddress.ToString();
+                return ipAddress.MapToIPv4().ToString();
             }
         }
         return httpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString() ?? "Unknown client";
