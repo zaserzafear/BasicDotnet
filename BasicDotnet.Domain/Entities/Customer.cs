@@ -1,9 +1,11 @@
-﻿namespace BasicDotnet.Domain.Entities;
+﻿using BasicDotnet.Domain.Enums;
+
+namespace BasicDotnet.Domain.Entities;
 
 public class Customer : UserBase
 {
     public Customer()
     {
-        RoleId = 3; // Customer Role ID
+        RoleId = (int)UserRoleEnum.Customer; // Customer Role ID
     }
 }

@@ -1,9 +1,11 @@
-﻿namespace BasicDotnet.Domain.Entities;
+﻿using BasicDotnet.Domain.Enums;
+
+namespace BasicDotnet.Domain.Entities;
 
 public class Admin : UserBase
 {
     public Admin()
     {
-        RoleId = 2; // Admin Role ID
+        RoleId = (int)UserRoleEnum.Admin; // Admin Role ID
     }
 }
