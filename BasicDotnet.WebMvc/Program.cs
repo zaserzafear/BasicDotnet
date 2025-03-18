@@ -16,6 +16,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(configuration.GetSection("ReverseProxy"));
 
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy = SameSiteMode.Strict;
+    options.ConsentCookie.Expiration = TimeSpan.FromDays(7);
+    options.ConsentCookieValue = "true";
+});
+
 builder.Services.Configure<ApiConfig>(builder.Configuration.GetSection("ApiConfig"));
 
 var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
@@ -41,6 +49,7 @@ if (!app.Environment.IsDevelopment())
 app.MapReverseProxy();
 
 app.UseStaticFiles();
+app.UseCookiePolicy();
 
 app.UseRouting();
 

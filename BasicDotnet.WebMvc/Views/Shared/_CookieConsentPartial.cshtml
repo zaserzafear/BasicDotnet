@@ -1,0 +1,80 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+
+@{
+    var consentFeature = Context.Features.Get<ITrackingConsentFeature>();
+    var showBanner = !consentFeature?.CanTrack ?? false;
+    var cookieString = consentFeature?.CreateConsentCookie();
+}
+
+@if (showBanner)
+{
+    <div id="cookieConsent" class="cookie-banner">
+        <div class="cookie-content">
+            <p>We use cookies to enhance your experience. By continuing, you agree to our <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>.</p>
+            <button type="button" class="accept-policy" data-cookie-string="@cookieString">Accept</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var button = document.querySelector("#cookieConsent .accept-policy");
+            button.addEventListener("click", function () {
+                document.cookie = button.dataset.cookieString + "; path=/";
+                document.getElementById("cookieConsent").classList.add("hide");
+            });
+        });
+    </script>
+
+    <style>
+        .cookie-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+            .cookie-banner a {
+                color: #66c2ff;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+                .cookie-banner a:hover {
+                    text-decoration: underline;
+                }
+
+            .cookie-banner .accept-policy {
+                background: #00c897;
+                color: #fff;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+
+                .cookie-banner .accept-policy:hover {
+                    background: #00a97f;
+                }
+
+            .cookie-banner.hide {
+                opacity: 0;
+                pointer-events: none;
+            }
+    </style>
+}
