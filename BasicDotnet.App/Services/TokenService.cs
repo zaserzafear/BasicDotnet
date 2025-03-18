@@ -37,13 +37,6 @@ public class TokenService
             var principal = ValidateToken(accessToken, ignoreExpiration: true);
             if (principal == null) return null;
 
-            //var claims = new[]
-            //    {
-            //    new Claim(JwtRegisteredClaimNames.UniqueName, user.Id.ToString()),
-            //    new Claim(ClaimTypes.Role, user.RoleId.ToString()),
-            //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            //};
-
             var allowedClaimTypes = new[]
             {
                 ClaimTypes.Name,
@@ -55,7 +48,9 @@ public class TokenService
                 .Where(c => allowedClaimTypes.Contains(c.Type))
                 .ToList();
 
-            return CreateToken(claims);
+            var tokenResponse = CreateToken(claims);
+            tokenResponse.RefreshToken = refreshToken;
+            return tokenResponse;
         }
         catch
         {
