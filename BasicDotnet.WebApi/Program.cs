@@ -4,8 +4,11 @@ using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebApi.RateLimit;
 using BasicDotnet.WebApi.RateLimit.Configurations;
 using BasicDotnet.WebApi.Security.Filters;
+using BasicDotnet.WebMvc.Configurations;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 namespace BasicDotnet.WebApi;
 
@@ -97,6 +100,15 @@ public class Program
         builder.Services.AddAuthentication();
 
         builder.Services.AddInfrastructureExtension(configuration);
+
+        var dataProtectionConfig = builder.Configuration.GetSection("DataProtection").Get<DataProtectionRedisConfig>();
+        if (dataProtectionConfig == null || string.IsNullOrEmpty(dataProtectionConfig.RedisConnection))
+        {
+            throw new Exception("Data Protection configuration is missing or invalid.");
+        }
+        var dataProtectionRedis = ConnectionMultiplexer.Connect(dataProtectionConfig.RedisConnection);
+        builder.Services.AddDataProtection()
+            .PersistKeysToStackExchangeRedis(() => dataProtectionRedis.GetDatabase(dataProtectionConfig.DatabaseId), dataProtectionConfig.KeyPrefix);
 
         var app = builder.Build();
 

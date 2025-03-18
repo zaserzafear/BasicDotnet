@@ -31,12 +31,16 @@ services:
       TZ: Asia/Bangkok
       ConnectionStrings__DefaultConnection: Server=basicdotnet.mysql;User=admin;Password=admin;Port=3306;Database=basic-dotnet;characterset=utf8mb4;
       RateLimiting__Redis__ConnectionString: basicdotnet.redis:6379, password=basicdotnet
+      DataProtection__RedisConnection: basicdotnet.redis:6379, password=basicdotnet
 
   basicdotnet.webmvc:
     image: ${DOCKER_REGISTRY-}basicdotnetwebmvc
     build:
       context: .
       dockerfile: BasicDotnet.WebMvc/Dockerfile
+    environment:
+      TZ: Asia/Bangkok
+      DataProtection__RedisConnection: basicdotnet.redis:6379, password=basicdotnet
 
 volumes:
   mysql-data: {}

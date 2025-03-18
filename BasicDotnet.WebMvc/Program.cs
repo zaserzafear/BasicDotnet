@@ -4,6 +4,8 @@ using BasicDotnet.Infra.Extensions;
 using BasicDotnet.WebMvc.Configurations;
 using BasicDotnet.WebMvc.Middleware;
 using BasicDotnet.WebMvc.Services;
+using Microsoft.AspNetCore.DataProtection;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -24,7 +26,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.ConsentCookieValue = "true";
 });
 
-builder.Services.Configure<ApiConfig>(builder.Configuration.GetSection("ApiConfig"));
+builder.Services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
 
 var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
 if (jwtSetting == null)
@@ -37,6 +39,15 @@ builder.Services.AddAuthentication();
 builder.Services.AddSingleton<AuthCookieService>();
 
 builder.Services.AddHttpClientExtensions();
+
+var dataProtectionConfig = builder.Configuration.GetSection("DataProtection").Get<DataProtectionRedisConfig>();
+if (dataProtectionConfig == null || string.IsNullOrEmpty(dataProtectionConfig.RedisConnection))
+{
+    throw new Exception("Data Protection configuration is missing or invalid.");
+}
+var dataProtectionRedis = ConnectionMultiplexer.Connect(dataProtectionConfig.RedisConnection);
+builder.Services.AddDataProtection()
+    .PersistKeysToStackExchangeRedis(() => dataProtectionRedis.GetDatabase(dataProtectionConfig.DatabaseId), dataProtectionConfig.KeyPrefix);
 
 var app = builder.Build();
 
