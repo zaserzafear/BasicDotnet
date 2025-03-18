@@ -89,7 +89,7 @@ public class Program
             });
         });
 
-        var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
+        var jwtSetting = configuration.GetSection("Jwt").Get<JwtSettings>();
         if (jwtSetting == null)
         {
             throw new ArgumentNullException(nameof(jwtSetting));

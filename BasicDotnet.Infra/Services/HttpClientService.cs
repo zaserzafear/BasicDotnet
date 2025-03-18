@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BasicDotnet.Infra.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -10,15 +11,17 @@ public class HttpClientService
     private readonly ILogger<HttpClientService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
-
+    private readonly HttpClientSettings _httpClientSettings;
 
     public HttpClientService(ILogger<HttpClientService> logger,
         IHttpClientFactory httpClientFactory,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        HttpClientSettings httpClientSettings)
     {
         _logger = logger;
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
+        _httpClientSettings = httpClientSettings;
     }
 
     private void AddClientIpHeader(HttpClient client)
@@ -33,9 +36,15 @@ public class HttpClientService
         }
     }
 
+    private void AddClientTimeout(HttpClient client)
+    {
+        client.Timeout = TimeSpan.FromSeconds(_httpClientSettings.TimeoutInSeconds);
+    }
+
     public async Task<ApiResponse<T>> GetAsync<T>(string clientName, string url)
     {
         var client = _httpClientFactory.CreateClient(clientName);
+        AddClientTimeout(client);
         AddClientIpHeader(client);
         try
         {
@@ -52,6 +61,7 @@ public class HttpClientService
     public async Task<ApiResponse<T>> PostAsync<T>(string clientName, string url, object? body = null)
     {
         var client = _httpClientFactory.CreateClient(clientName);
+        AddClientTimeout(client);
         AddClientIpHeader(client);
         try
         {

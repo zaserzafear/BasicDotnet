@@ -6,7 +6,7 @@ namespace BasicDotnet.App.Extensions;
 
 public static class ApplicationExtension
 {
-    public static IServiceCollection AddApplicationExtension(this IServiceCollection services, JwtSetting jwtSetting)
+    public static IServiceCollection AddApplicationExtension(this IServiceCollection services, JwtSettings jwtSetting)
     {
         services.AddScoped<AuthService>();
 

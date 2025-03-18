@@ -9,10 +9,10 @@ namespace BasicDotnet.App.Services;
 
 public class TokenService
 {
-    private readonly JwtSetting _jwtSetting;
+    private readonly JwtSettings _jwtSetting;
     private readonly JwtSecurityTokenHandler _tokenHandler;
 
-    public TokenService(JwtSetting jwtSetting)
+    public TokenService(JwtSettings jwtSetting)
     {
         _jwtSetting = jwtSetting;
         _tokenHandler = new JwtSecurityTokenHandler();

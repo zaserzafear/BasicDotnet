@@ -28,17 +28,22 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 
 builder.Services.Configure<ApiConfig>(configuration.GetSection("ApiConfig"));
 
-var jwtSetting = configuration.GetSection("Jwt").Get<JwtSetting>();
-if (jwtSetting == null)
+var jwtSettings = configuration.GetSection("Jwt").Get<JwtSettings>();
+if (jwtSettings == null)
 {
-    throw new ArgumentNullException(nameof(jwtSetting));
+    throw new ArgumentNullException(nameof(jwtSettings));
 }
 
-builder.Services.AddJwtAuthentication(jwtSetting);
+builder.Services.AddJwtAuthentication(jwtSettings);
 builder.Services.AddAuthentication();
 builder.Services.AddSingleton<AuthCookieService>();
 
-builder.Services.AddHttpClientExtensions();
+var HttpClientSettings = configuration.GetSection("HttpClientSettings").Get<HttpClientSettings>();
+if (HttpClientSettings == null)
+{
+    throw new ArgumentNullException(nameof(HttpClientSettings));
+}
+builder.Services.AddHttpClientExtensions(HttpClientSettings);
 
 var dataProtectionConfig = builder.Configuration.GetSection("DataProtection").Get<DataProtectionRedisConfig>();
 if (dataProtectionConfig == null || string.IsNullOrEmpty(dataProtectionConfig.RedisConnection))

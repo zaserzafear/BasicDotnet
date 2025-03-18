@@ -9,7 +9,7 @@ namespace BasicDotnet.App.Extensions;
 
 public static class JwtExtensions
 {
-    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSetting jwtSetting)
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSetting)
     {
         // Ensure JwtSettings are properly configured
         if (string.IsNullOrEmpty(jwtSetting.SecretKey) ||

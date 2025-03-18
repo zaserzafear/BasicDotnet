@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   basicdotnet.mysql:
     image: mysql:8.4.4-oraclelinux9
@@ -12,6 +14,11 @@ services:
       MYSQL_PASSWORD: admin
     ports:
       - 58237:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   basicdotnet.redis:
     image: redis:7
@@ -21,12 +28,22 @@ services:
       TZ: Asia/Bangkok
     ports:
       - 61038:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "basicdotnet", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   basicdotnet.webapi:
     image: ${DOCKER_REGISTRY-}basicdotnetwebapi
     build:
       context: .
       dockerfile: BasicDotnet.WebApi/Dockerfile
+    depends_on:
+      basicdotnet.mysql:
+        condition: service_healthy
+      basicdotnet.redis:
+        condition: service_healthy
     environment:
       TZ: Asia/Bangkok
       ConnectionStrings__DefaultConnection: Server=basicdotnet.mysql;User=admin;Password=admin;Port=3306;Database=basic-dotnet;characterset=utf8mb4;
@@ -38,6 +55,11 @@ services:
     build:
       context: .
       dockerfile: BasicDotnet.WebMvc/Dockerfile
+    depends_on:
+      basicdotnet.mysql:
+        condition: service_healthy
+      basicdotnet.redis:
+        condition: service_healthy
     environment:
       TZ: Asia/Bangkok
       DataProtection__RedisConnection: basicdotnet.redis:6379, password=basicdotnet
