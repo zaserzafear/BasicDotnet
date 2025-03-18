@@ -18,14 +18,36 @@ internal class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Role>().HasData(
-            new Role { Id = (int)UserRoleEnum.SuperAdmin, Name = UserRoleEnum.SuperAdmin.GetName() },
-            new Role { Id = (int)UserRoleEnum.Admin, Name = UserRoleEnum.Admin.GetName() },
-            new Role { Id = (int)UserRoleEnum.Customer, Name = UserRoleEnum.Customer.GetName() }
+            new Role
+            {
+                Id = (int)UserRoleEnum.SuperAdmin,
+                Name = UserRoleEnum.SuperAdmin.GetName()
+            },
+            new Role
+            {
+                Id = (int)UserRoleEnum.Admin,
+                Name = UserRoleEnum.Admin.GetName()
+            },
+            new Role
+            {
+                Id = (int)UserRoleEnum.Customer,
+                Name = UserRoleEnum.Customer.GetName()
+            }
         );
 
         builder.Entity<Permission>().HasData(
-            new Permission { Id = (int)PermissionEnum.ViewAllCustomers, Name = PermissionEnum.ViewAllCustomers.GetName(), Description = "Permission to view all customers" },
-            new Permission { Id = (int)PermissionEnum.ViewOwnUserId, Name = PermissionEnum.ViewOwnUserId.GetName(), Description = "Permission to view only own customer details" }
+            new Permission
+            {
+                Id = (int)PermissionEnum.ViewAllCustomers,
+                Name = PermissionEnum.ViewAllCustomers.GetName(),
+                Description = "Permission to view all customers"
+            },
+            new Permission
+            {
+                Id = (int)PermissionEnum.ViewOwnUserId,
+                Name = PermissionEnum.ViewOwnUserId.GetName(),
+                Description = "Permission to view only own customer details"
+            }
         );
 
         builder.Entity<RolePermission>()
@@ -43,15 +65,35 @@ internal class AppDbContext : DbContext
 
         builder.Entity<RolePermission>().HasData(
             // SuperAdmin has permission to view all customers and their own customer
-            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // SuperAdmin can view all customers
-            new RolePermission { RoleId = (int)UserRoleEnum.SuperAdmin, PermissionId = (int)PermissionEnum.ViewOwnUserId },  // SuperAdmin can view own user_id
+            new RolePermission
+            {
+                RoleId = (int)UserRoleEnum.SuperAdmin,
+                PermissionId = (int)PermissionEnum.ViewAllCustomers
+            },  // SuperAdmin can view all customers
+            new RolePermission
+            {
+                RoleId = (int)UserRoleEnum.SuperAdmin,
+                PermissionId = (int)PermissionEnum.ViewOwnUserId
+            },  // SuperAdmin can view own user_id
 
             // Admin can view all customers and their own customer
-            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewAllCustomers },  // Admin can view all customers
-            new RolePermission { RoleId = (int)UserRoleEnum.Admin, PermissionId = (int)PermissionEnum.ViewOwnUserId },  // Admin can view own user_id
+            new RolePermission
+            {
+                RoleId = (int)UserRoleEnum.Admin,
+                PermissionId = (int)PermissionEnum.ViewAllCustomers
+            },  // Admin can view all customers
+            new RolePermission
+            {
+                RoleId = (int)UserRoleEnum.Admin,
+                PermissionId = (int)PermissionEnum.ViewOwnUserId
+            },  // Admin can view own user_id
 
             // Customer can only view their own customer
-            new RolePermission { RoleId = (int)UserRoleEnum.Customer, PermissionId = (int)PermissionEnum.ViewOwnUserId }   // Customer can view their own user_id customer
+            new RolePermission
+            {
+                RoleId = (int)UserRoleEnum.Customer,
+                PermissionId = (int)PermissionEnum.ViewOwnUserId
+            }   // Customer can view their own user_id customer
         );
     }
 }
