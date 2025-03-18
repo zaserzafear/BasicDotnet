@@ -31,7 +31,12 @@ public class Program
             options.Filters.Add<PermissionAuthorizationFilter>();
         });
 
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        // Register RateLimitRedisAdapter and define policies
+        builder.Services.Configure<RateLimitingOptions>(configuration.GetSection("RateLimiting"));
+        builder.Services.AddSingleton<RateLimitRedisAdapter>();
+
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? Array.Empty<string>();
         builder.Services.AddCors(options =>
         {
             if (allowedOrigins.Length > 0 && allowedOrigins[0] == "*")
@@ -54,10 +59,6 @@ public class Program
                 });
             }
         });
-
-        // Register RateLimitRedisAdapter and define policies
-        builder.Services.Configure<RateLimitingOptions>(configuration.GetSection("RateLimiting"));
-        builder.Services.AddSingleton<RateLimitRedisAdapter>();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
