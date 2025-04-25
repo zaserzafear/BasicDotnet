@@ -49,16 +49,25 @@ public class CustomersController : ControllerBase
     [Authorize(Roles = "customer")]
     public async Task<IActionResult> GetCurrentUserAsync()
     {
-        var userId = _tokenService.GetCurrentUserId();
+        var userIdString = _tokenService.GetCurrentUserId();
+
+        if (!Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+
         var result = await _appDbContext.Customers
             .AsNoTracking()
-            .Where(x => x.Id.ToString() == userId)
+            .Where(x => x.Id == userId)
             .Select(x => new Customer { Id = x.Id, Username = x.Username, Email = x.Email })
             .FirstOrDefaultAsync();
+
         if (result == null || string.IsNullOrEmpty(result.Username))
         {
             return Unauthorized();
         }
+
         return Ok(result);
     }
+
 }
